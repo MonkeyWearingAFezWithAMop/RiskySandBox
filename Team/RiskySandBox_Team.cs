@@ -56,6 +56,9 @@ public partial class RiskySandBox_Team : MonoBehaviour
 
     public ObservableInt n_Tiles { get { return PRIVATE_n_Tiles; } }
 
+    public ObservableInt n_capitals { get { return PRIVATE_n_capitals; } }
+    [SerializeField] ObservableInt PRIVATE_n_capitals;
+
     [SerializeField] private ObservableInt PRIVATE_n_Tiles;
 
 

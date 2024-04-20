@@ -6,9 +6,10 @@ using Photon.Realtime;
 public partial class RiskySandBox_GameLobby : MonoBehaviourPunCallbacks
 {
 
-    [SerializeField] bool debugging;
+    public static event Action OnenterLobby;
 
-    [SerializeField] int main_game_scene_id;
+    [SerializeField] bool debugging;
+    [SerializeField] UnityEngine.UI.Button startGame_Button;
 
     [SerializeField] GameObject text_prefab;
     [SerializeField] Transform ui_root_Transform;
@@ -18,8 +19,34 @@ public partial class RiskySandBox_GameLobby : MonoBehaviourPunCallbacks
 
 
 
+
+    public override void OnEnable()
+    {
+        base.OnEnable();
+
+        PrototypingAssets.run_server_code.OnUpdate += EventReceiver_OnVariableUpdate_run_server_code;    //TODO - nope! lets call this is_host...
+        RiskySandBox_HumanPlayer.all_instances.OnUpdate += updatePlayersUI;
+    }
+
+    public override void OnDisable()
+    {
+        base.OnDisable();
+
+        RiskySandBox_HumanPlayer.all_instances.OnUpdate -= updatePlayersUI;
+        PrototypingAssets.run_server_code.OnUpdate -= EventReceiver_OnVariableUpdate_run_server_code;
+    }
+
+
+    void EventReceiver_OnVariableUpdate_run_server_code(ObservableBool _run_server_code)
+    {
+        //if the value is true...
+        startGame_Button.gameObject.SetActive((PrototypingAssets.run_server_code.value == true) && (RiskySandBox_MainGame.instance.game_started.value == false));
+    }
+
+
     private void Start()
     {
+        startGame_Button.gameObject.SetActive((PrototypingAssets.run_server_code.value == true) && (RiskySandBox_MainGame.instance.game_started.value == false));
         createMyHumanPlayer();
         updatePlayersUI();
 
@@ -44,20 +71,7 @@ public partial class RiskySandBox_GameLobby : MonoBehaviourPunCallbacks
             return;
 
         PhotonNetwork.Instantiate(RiskySandBox_Resources.human_player_prefab.name, new Vector3(0, 0, 0), Quaternion.identity);
-    }
-
-
-
-    public override void OnPlayerEnteredRoom(Player newPlayer)
-    {
-        base.OnPlayerEnteredRoom(newPlayer);
-        updatePlayersUI();
-    }
-
-    public override void OnPlayerLeftRoom(Player otherPlayer)
-    {
-        base.OnPlayerLeftRoom(otherPlayer);
-        updatePlayersUI();
+        OnenterLobby?.Invoke();
     }
 
 
@@ -66,8 +80,11 @@ public partial class RiskySandBox_GameLobby : MonoBehaviourPunCallbacks
 
         foreach(UnityEngine.UI.Text _Text in current_username_Texts)
         {
+            if (_Text == null)
+                continue;
             UnityEngine.Object.Destroy(_Text.gameObject);
         }
+        current_username_Texts.Clear();
 
         List<Photon.Realtime.Player> _Player_list = new List<Photon.Realtime.Player>(PhotonNetwork.PlayerList);
 
@@ -97,23 +114,17 @@ public partial class RiskySandBox_GameLobby : MonoBehaviourPunCallbacks
 
         
         
-       
-        //assign the players team to be this team...
-        List<Photon.Realtime.Player> _Player_list = new List<Photon.Realtime.Player>(PhotonNetwork.PlayerList);
-
-
-        for (int i = 0; i < _Player_list.Count; i += 1)//foreach human player...
+        for( int i = 0; i < RiskySandBox_HumanPlayer.all_instances.Count; i += 1)//foreach human player...
         {
             GameObject _new_Team_GO = PhotonNetwork.InstantiateRoomObject(RiskySandBox_Resources.Team_prefab.name, Vector3.zero, Quaternion.identity);//create a new team...
             RiskySandBox_Team _new_Team = _new_Team_GO.GetComponent<RiskySandBox_Team>();
             _new_Team.ID.value = i;//assign a unique id for the Team...
 
 
-            //get the human player accociated with this _PlayerList[i].... get the HumanPlayer script and assign the id to be i
+            
 
-            RiskySandBox_HumanPlayer _HumanPlayer = GET_RiskySandBox_HumanPlayer(_Player_list[i]);
+            RiskySandBox_HumanPlayer _HumanPlayer = RiskySandBox_HumanPlayer.all_instances[i];//assign the humanplayer team id to be this value aswell...
             _HumanPlayer.my_Team_ID.value = i;
-
 
         }
 

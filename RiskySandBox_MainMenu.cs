@@ -4,7 +4,8 @@ using UnityEngine;
 public partial class RiskySandBox_MainMenu : MonoBehaviour
 {
     [SerializeField] bool debugging;
-    [SerializeField] int play_menu_scene_id;
+
+    [SerializeField] GameObject root_ui;
     [SerializeField] int level_editor_scene_id;
 
     [SerializeField] UnityEngine.UI.Button play_Button;
@@ -13,22 +14,49 @@ public partial class RiskySandBox_MainMenu : MonoBehaviour
 
 
 
+    public void enable()
+    {
+        //enable the root ui!
+        root_ui.SetActive(true);
+
+    }
+
+    public void disable()
+    {
+        //disable the root ui!
+        root_ui.SetActive(false);
+    }
+
+
+
     private void Start()
     {
-        Photon.Pun.PhotonNetwork.NickName = "Player: " + GlobalFunctions.randomInt(0, 1000000);
+        enable();
+
+        if(Photon.Pun.PhotonNetwork.NickName == "")
+        {
+            //thats ok.. we shall temporarily make it a username that doesnt matter for now...
+            Photon.Pun.PhotonNetwork.NickName = "Player: " + GlobalFunctions.randomInt(0, 1000000);
+
+        }
+        
         nickname_InputField.text = Photon.Pun.PhotonNetwork.NickName;
-        nickname_InputField.interactable = false;
+        nickname_InputField.interactable = false;//this has not been implemented yet...
+        nickname_InputField.onValueChanged.AddListener(setNickNameFromInputField);
+        
     }
 
-    private void Update()
+
+
+    void setNickNameFromInputField(string _incoming_value)
     {
-        play_Button.interactable = Photon.Pun.PhotonNetwork.NickName != "";
+        Photon.Pun.PhotonNetwork.NickName = _incoming_value;
     }
 
-    public void play()
-    {
-        UnityEngine.SceneManagement.SceneManager.LoadScene(play_menu_scene_id);
-    }
+
+
+
+  
 
 
     public void levelEditor()

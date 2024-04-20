@@ -4,7 +4,7 @@ using Photon.Pun;
 
 public partial class RiskySandBox_HumanPlayer : MonoBehaviour
 {
-    public static List<RiskySandBox_HumanPlayer> all_instances = new List<RiskySandBox_HumanPlayer>();
+    public static ObservableList<RiskySandBox_HumanPlayer> all_instances = new ObservableList<RiskySandBox_HumanPlayer>();
 
     public event Action<RiskySandBox_HumanPlayer> OnVariableUpdate_selected_Tile;
     public event Action<RiskySandBox_HumanPlayer> OnVariableUpdate_attack_target;

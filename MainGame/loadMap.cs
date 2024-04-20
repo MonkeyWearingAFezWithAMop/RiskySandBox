@@ -92,12 +92,15 @@ public partial class RiskySandBox_MainGame
 
     public void loadTiles(string _path)
     {
-        print("loading the tiles... in folder: '" + _path + "'");
+        if(this.debugging == true)
+            print("loading the tiles... in folder: '" + _path + "'");
+
         foreach (string _tile_file in Directory.GetFiles(_path))
         {
             if (Path.GetFileName(_tile_file).EndsWith(".txt") == false)//we dont care about file types that arn't .txt
                 continue;
-            print("loading the tile at: " + _tile_file);
+            if(this.debugging == true)
+                print("loading the tile at: " + _tile_file);
 
             string[] _lines = File.ReadAllLines(_tile_file);
 
@@ -235,6 +238,42 @@ public partial class RiskySandBox_MainGame
 
 
         
+    }
+
+
+
+
+    public static List<string> GET_mapIDs()
+    {
+        List<string> _IDS = new List<string>();
+
+
+        // Get a list of all folders (directories) in the specified folder path
+        string[] directories = Directory.GetDirectories(map_path);
+
+        
+        // Loop through each directory
+        foreach (string directory in directories)//read through the map directories
+        {
+            string[] files = Directory.GetFiles(directory);//grab all the files
+
+            
+            foreach (string file in files)// Loop through each file in the current directory
+            {
+                if (Path.GetFileName(file) != "MapInfo.txt")//awesome! lets get the id...
+                    continue;
+                string[] lines = File.ReadAllLines(file);
+
+                Dictionary<string, string> _map_info = extractData(lines);
+
+
+                string _map_ID = _map_info["ID"];
+
+                _IDS.Add(_map_ID);
+            }
+        }
+
+        return _IDS;
     }
 
 
