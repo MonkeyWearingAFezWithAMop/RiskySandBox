@@ -4,6 +4,7 @@ using UnityEngine;
 public partial class RiskySandBox_GameSetupUI : MonoBehaviour
 {
 
+    [SerializeField] UnityEngine.UI.Button create_mp_Button;
     [SerializeField] GameObject root_UI;
 
     public void enable()
@@ -22,11 +23,11 @@ public partial class RiskySandBox_GameSetupUI : MonoBehaviour
         RiskySandBox_GameLobby.OnenterLobby += EventReceiver_OnenterLobby; 
     }
 
-    private void Start()
-    {
-        disable();
-    }
 
+    private void Update()
+    {
+        create_mp_Button.interactable = Photon.Pun.PhotonNetwork.IsConnected;
+    }
 
     void EventReceiver_OnenterLobby()
     {

@@ -56,33 +56,51 @@ public partial class RiskySandBox_MainGame
                 GlobalFunctions.print("can't attack as _to.my_Team == this... returning", _Team);
             return;
         }
-        //TODO - run the simulation using the _attack_method...
 
-        int _n_kills = 0;
-        int _n_deaths = 0;
+        //make sure there is a connection between the start tile and the end tile
 
-        for (int _i = 0; _i < _n_troops; _i += 1)
+        if(_start_Tile.graph_connections.Contains(_target_Tile.ID) == false)
         {
-            if ((_start_Tile.num_troops - _n_deaths) <= RiskySandBox_Tile.min_troops_per_Tile)
-                break;
-
-            if ((_target_Tile.num_troops - _n_kills) <= 0)
-                break;
-
-            int _RNG = GlobalFunctions.randomInt(0, 1);
-
-            if (_RNG == 0)
-                _n_kills += 1;
-            else
-                _n_deaths += 1;
+            if (debugging)
+                GlobalFunctions.print("cant attack as the start tile ids graph_connections doesnt contain the target_Tile_ID",this);
+            return;
         }
 
-        RiskySandBox_MainGame.instance.SET_num_troops(_start_Tile.ID, _start_Tile.num_troops - _n_deaths);
-        RiskySandBox_MainGame.instance.SET_num_troops(_target_Tile.ID, _target_Tile.num_troops - _n_kills);
+        if(RiskySandBox_MainGame.instance.enable_alliances)
+        {
+            bool _is_ally = _start_Tile.my_Team.ally_ids.Contains(_target_Tile.my_Team.ID);
+
+            if(_is_ally && (RiskySandBox_MainGame.instance.allow_attack_ally_Tiles.value == false))
+            {
+                //if the end tile is an ally???  AND we can't attack allies...
+                if (debugging)
+                    GlobalFunctions.print("can't attack an allies Tile!", this);
+                return;
+            }
+        }
+
+        //TODO - run the simulation using the _attack_method...
+
+        int _remaining_attackers;
+        int _remaining_defenders;
+
+        if(_target_Tile.has_capital == true)
+            RiskySandBox_AttackSimulations.doBattle(_start_Tile.num_troops.value - 1, _target_Tile.num_troops.value, RiskySandBox_AttackSimulations.capitals_mode_string, out _remaining_attackers, out _remaining_defenders);
+        else
+            RiskySandBox_AttackSimulations.doBattle(_start_Tile.num_troops.value - 1, _target_Tile.num_troops.value, _attack_method,out _remaining_attackers, out _remaining_defenders);
+
+        int _defender_deaths = _target_Tile.num_troops.value - _remaining_defenders;
+        int _attacker_deaths = _start_Tile.num_troops.value - _remaining_attackers;
+        
+
+        RiskySandBox_MainGame.instance.SET_num_troops(_start_Tile.ID, _remaining_attackers + 1);//attacker must always be left with 1 troop on the tile...
+        RiskySandBox_MainGame.instance.SET_num_troops(_target_Tile.ID, _remaining_defenders);
 
 
-        bool _capture_flag = _target_Tile.num_troops <= 0;
+        bool _capture_flag = _remaining_defenders <= 0;
 
+
+        this.invokeEvent_Onattack(_Team, _start_Tile, _target_Tile, _attacker_deaths, _defender_deaths, _capture_flag, _attack_method, _alert_MultiplayerBridge: true);
 
 
         if (_capture_flag)

@@ -1,8 +1,12 @@
 using System.Collections;using System.Collections.Generic;using System.Linq;using System;
 using UnityEngine;
 
-public partial class RiskySandBox_MainGame : MonoBehaviour
+public partial class RiskySandBox_MainGame
 {
+
+    
+
+
     public static RiskySandBox_MainGame instance;
 
     //multiplayer events...
@@ -13,29 +17,32 @@ public partial class RiskySandBox_MainGame : MonoBehaviour
     public static event Action<RiskySandBox_Tile> OnSET_num_troops;
     public static event Action<RiskySandBox_Tile> OnSET_my_Team;
 
+    public ObservableList<RiskySandBox_Team> ai_Teams = new ObservableList<RiskySandBox_Team>();
 
 
 
-    [SerializeField] bool debugging;
+    
 
+    public ObservableFloat turn_length_seconds;
     public ObservableString map_ID { get { return this.PRIVATE_map_ID; } }
-
     public ObservableBool game_started { get { return PRIVATE_game_started; } }
-
-    [SerializeField] ObservableFloat PRIVATE_world_domination_percentage;
-    [SerializeField] ObservableString PRIVATE_map_ID;
-    [SerializeField] ObservableBool PRIVATE_capitals_mode;
-    [SerializeField] ObservableBool PRIVATE_game_started;
-    [SerializeField] ObservableFloat PRIVATE_capital_conquest_percentage;
-
-
+    public ObservableInt n_bots { get { return this.PRIVATE_n_bots; } }
     public GameObject game_setup_UI { get { return PRIVATE_game_setup_UI; } }
 
-    [SerializeField] GameObject PRIVATE_game_setup_UI;
+    public ObservableInt num_capitals_startGame { get { return PRIVATE_num_capitals_startGame; } }
+
+    public ObservableBool assassin_mode { get { return this.PRIVATE_assassin_mode; } }
+
+    public ObservableInt max_num_cards { get { return this.PRIVATE_max_num_cards; } }
+
+    public ObservableInt capital_troop_generation { get { return this.PRIVATE_capital_troop_generation; } }
 
 
-    public Dictionary<int, List<int>> graph = new Dictionary<int, List<int>>();
-    public List<Bonus> bonuses = new List<Bonus>();
+
+
+    
+
+
 
 
     //if the map hasnt been loaded yet? - we need to buffer these values so that once the map has been loaded... the Tiles can be updated with their Teams and num troops...
@@ -44,13 +51,19 @@ public partial class RiskySandBox_MainGame : MonoBehaviour
 
 
     public Transform tile_parent_Transform { get { return this.transform; } }
-
+    public Transform bonus_parent_Transform { get { return this.transform; } }
     
 
 
     List<RiskySandBox_Team> turn_order { get { return RiskySandBox_Team.all_instances.Where(x => x != null && x.defeated.value == false).OrderByDescending(x => x.ID.value).Reverse().ToList(); } }
 
 
+
+    public void clearMap()
+    {
+        RiskySandBox_Tile.destroyAllTiles();
+        RiskySandBox_Bonus.destroyAllBonuses();
+    }
 
     
 
@@ -97,9 +110,8 @@ public partial class RiskySandBox_MainGame : MonoBehaviour
 
         if (_Tile != null)
         {
-            
-            _Tile.previous_my_Team = _Tile.my_Team;
-            _Tile.my_Team = RiskySandBox_Team.GET_RiskySandBox_Team(_Team_ID);
+
+            _Tile.my_Team_ID.value = _Team_ID;
 
             RiskySandBox_MainGame.OnSET_my_Team?.Invoke(_Tile);
 
@@ -107,7 +119,7 @@ public partial class RiskySandBox_MainGame : MonoBehaviour
         }
 
         else
-        {
+            {
             //we need to update the buffer so that once that map is loaded this can be pushed through...
         }
 
@@ -118,90 +130,37 @@ public partial class RiskySandBox_MainGame : MonoBehaviour
 
 
 
-    protected virtual void endGameCheck()
-    { 
-        int _n_undefeated_Teams = RiskySandBox_Team.undefeated_Teams.Count();
-
-        if (this.debugging)
-            GlobalFunctions.print("checking if we should end the game... _n_undefeated_Teams = "+_n_undefeated_Teams, this);
-        //if there is only 1 team left?
 
 
-        HashSet<RiskySandBox_Team> _winners = new HashSet<RiskySandBox_Team>(); //hashset so dont worry about duplication (because of trggering multiple win conditions)
+
+
+
+    void TeamEventReceiver_OnturnTimerReachedZero(RiskySandBox_Team _Team)
+    {
+        if (PrototypingAssets.run_server_code == false)
+            return;
+        //TODO - we must do some checks...
+        //make sure all the troops have been deployed...
+        //if there are still some we must deploy them automatically?
         
-        if (_n_undefeated_Teams == 1)//if there is only 1 team left?
-        {
-            _winners.Add(RiskySandBox_Team.undefeated_Teams[0]);
-        }
-
-        foreach(RiskySandBox_Team _Team in RiskySandBox_Team.undefeated_Teams)
-        {
-            //great lets check if they have the world domination %...
-            int _n_Tiles_Team = _Team.n_Tiles;
-            int _n_Tiles_total = RiskySandBox_Tile.all_instances.Count;
-
-            float _percentage = 100 *  (_n_Tiles_Team / _n_Tiles_total);
-
-            if(_percentage >= this.PRIVATE_world_domination_percentage)
-            {
-                //ok this team is a winner!
-                _winners.Add(_Team);
-            }
-
-            else
-            {
-                //if they have one because they have captured all the 'capitals'
-                int _n_capitals_Team = _Team.n_capitals;
-                int _n_capitals_total = RiskySandBox_Capital.all_instances.Count;
-
-                float _capitals_percentage = _n_capitals_Team / _n_capitals_total;
-                if (_capitals_percentage >= this.PRIVATE_capital_conquest_percentage)//if they have captured enough capitals in order to win...
-                {
-                    _winners.Add(_Team);//add them to the winners 
-                }
-
-                //TODO - we need a way for other users to create endGameConditions if they implement their own game mode(s) func? or perhaps we expose endGame as a public function that other people can call with their code?
-                //they will have to pass in a list of winners (and everything that is needed for the endGame scene...)
-
-            }
-        }
-
-        if(_winners.Count > 0)
-        {
-            //end the game...
-            endGame();//pass in (or "save") the winners so that the "endgame scene" can show everyone who won!
-        }
-
-
-
-       
-    }
-
-
-    private void Awake()
-    {
-        instance = this;
-        RiskySandBox_Team.OnVariableUpdate_defeated_STATIC += delegate { endGameCheck(); };
-
-        this.map_ID.OnUpdate += delegate { this.loadMap(this.map_ID); };
+        this.endTurn(_Team, "turn timer ran out");//end current teams turn...
+        //TODO - end of game check...
+        RiskySandBox_Team _next_Team = GET_nextTeam(_Team);
+        if (_next_Team != null)
+            this.startTurn(_next_Team);
+        
     }
 
 
 
- 
 
-
-
-    public virtual void startTurn(RiskySandBox_Team _Team)
+    protected virtual void endTurn(RiskySandBox_Team _Team,string _debug_reason)
     {
-        _Team.current_turn_state.value = RiskySandBox_Team.turn_state_deploy;
-        _Team.deployable_troops.value += calculateTroopGeneration(_Team);
-    }
-
-    public virtual void endTurn(RiskySandBox_Team _Team)
-    {
+        if (this.debugging)
+            GlobalFunctions.print("ending the teams turn..." + _debug_reason, _Team,_Team,_debug_reason);
         _Team.current_turn_state.value = RiskySandBox_Team.turn_state_waiting;
         _Team.deployable_troops.value = 0;
+        _Team.is_my_turn.value = false;
         
     }
 
@@ -240,11 +199,17 @@ public partial class RiskySandBox_MainGame : MonoBehaviour
 
         if(_current_state == RiskySandBox_Team.turn_state_deploy)// deploy -> attack...
         {
+
             if(_Team.deployable_troops.value > 0)
             {
+                if (this.debugging)
+                    GlobalFunctions.print("staying in the deploy state (the Team still had deployable troops...",this);
                 //nope dont allow this...
                 return;
             }
+            if (this.debugging)
+                GlobalFunctions.print("putting the team into the attack state",this);
+
             _Team.current_turn_state.value = RiskySandBox_Team.turn_state_attack;
         }
 
@@ -263,20 +228,12 @@ public partial class RiskySandBox_MainGame : MonoBehaviour
 
             RiskySandBox_Team _next_Team = GET_nextTeam(_Team);
 
-            endTurn(_Team);
+            endTurn(_Team,"fortify -> next team turn");
 
             startTurn(_next_Team);
             
         }
 
-    }
-
-
-    [Serializable]
-    public struct Bonus
-    {
-        public int generation;
-        public List<int> tile_IDs;
     }
 
 

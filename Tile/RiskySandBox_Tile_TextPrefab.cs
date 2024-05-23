@@ -5,7 +5,7 @@ public partial class RiskySandBox_Tile_TextPrefab : MonoBehaviour
 {
     [SerializeField] float duration = 1f;
     [SerializeField] Vector3 movement_direction = new Vector3(0, 1, 1);
-    [SerializeField] float movement_speed = 1f;
+    [SerializeField] public float movement_speed = 1f;
 
 
 

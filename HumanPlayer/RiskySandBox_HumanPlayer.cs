@@ -22,7 +22,6 @@ public partial class RiskySandBox_HumanPlayer : MonoBehaviour
     [SerializeField] ObservableInt PRIVATE_my_Team_ID;
 
 
-    [SerializeField] PrototypingAssets_RTSController my_RTSController;
 
 
 
@@ -45,58 +44,11 @@ public partial class RiskySandBox_HumanPlayer : MonoBehaviour
             OnVariableUpdate_selected_Tile?.Invoke(this);
 
 
-            RiskySandBox_Tile.resetVisuals();
-
+            ObservableInt.resetAllUIs();
         }
     }
 
     [SerializeField] RiskySandBox_Tile PRIVATE_selected_Tile;
-
-    public RiskySandBox_Tile attack_target
-    {
-        get { return PRIVATE_attack_target; }
-        set
-        {
-            if (this.PRIVATE_attack_target != null)
-                PRIVATE_attack_target.is_attack_target.value = false;
-
-            this.PRIVATE_attack_target = value;
-
-            if (value != null)
-                value.is_attack_target.value = true;
-
-            OnVariableUpdate_attack_target?.Invoke(this);
-
-        }
-    }
-    [SerializeField] RiskySandBox_Tile PRIVATE_attack_target;
-
-
-
-    public RiskySandBox_Tile fortify_target
-    {
-        get { return PRIVATE_fortify_target; }
-        set
-        {
-            if (this.PRIVATE_fortify_target != null)
-                this.PRIVATE_fortify_target.is_fortify_target.value = false;
-
-            this.PRIVATE_fortify_target = value;
-
-            if (this.PRIVATE_fortify_target != null)
-                value.is_fortify_target.value = true;
-
-            OnVariableUpdate_fortify_target?.Invoke(this);
-        }
-    }
-    RiskySandBox_Tile PRIVATE_fortify_target;
-
-
-
-
-
-
-    
 
 
     private void Awake()
@@ -104,7 +56,6 @@ public partial class RiskySandBox_HumanPlayer : MonoBehaviour
         RiskySandBox_HumanPlayer.all_instances.Add(this);
         my_PhotonView = GetComponent<Photon.Pun.PhotonView>();
 
-        my_RTSController.enabled = this.my_PhotonView.IsMine;
 
 
         RiskySandBox_Team.OnVariableUpdate_current_turn_state_STATIC += EventReceiver_OnVariableUpdate_current_turn_state_STATIC;
@@ -138,105 +89,74 @@ public partial class RiskySandBox_HumanPlayer : MonoBehaviour
         if (my_PhotonView.IsMine == false)
             return;
 
+        RiskySandBox_Tile _current_Tile = RiskySandBox_CameraControls.current_hovering_Tile;
+       
+
         //if we left click on a tile?
-        if(Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0))
         {
             if (my_Team == null)
                 return;
-            this.handleLeftClick(my_Team.current_turn_state);
-        }
-    }
 
+            string _current_state = my_Team.current_turn_state;
 
-    /// <summary>
-    /// code that runs when player left clicks in the "deploy" state...
-    /// </summary>
-    void handleLeftClick_deploy(RiskySandBox_Tile _Tile)
-    {
-        if (_Tile != null && _Tile.my_Team == this.my_Team)
-        {
-            if (this.debugging)
-                GlobalFunctions.print("left clicked in the deploy state... _Tile was part of my_Team! - selecting it...", this, _Tile);
-            this.selected_Tile = _Tile;
-        }
-    }
-
-    /// <summary>
-    /// code that runs when player left clicks in the "attack" state...
-    /// </summary>
-    void handleLeftClick_attack(RiskySandBox_Tile _Tile)
-    {
-        if (_Tile.my_Team == this.my_Team)
-        {
-            this.selected_Tile = _Tile;
-        }
-        else
-        {
-            if (this.selected_Tile != null)
+            if (_current_state == RiskySandBox_Team.turn_state_waiting)
             {
-                this.attack_target = _Tile;
+                if (this.debugging)
+                    GlobalFunctions.print("currently in the waiting state... returning", my_Team.current_turn_state);
+                return;
+            }
+
+            else if (_current_state == RiskySandBox_Team.turn_state_deploy)
+            {
+                handleLeftClick_deploy();
+            }
+
+            else if (_current_state == RiskySandBox_Team.turn_state_attack)
+            {
+                handleLeftClick_attack();
+            }
+
+            else if (_current_state == RiskySandBox_Team.turn_state_fortify)
+            {
+                handleLeftClick_fortify();
+            }
+
+            else if (_current_state == RiskySandBox_Team.turn_state_placing_capital)
+            {
+                handleLeftClick_placeCapital();
             }
         }
-    }
 
-    /// <summary>
-    /// code that runs when player left clicks in the "fortify" state...
-    /// </summary>
-    void handleLeftClick_fortify(RiskySandBox_Tile _Tile)
-    {
-        if (_Tile.my_Team == this.my_Team)
+
+        if(Input.GetKeyDown(KeyCode.Escape) == true)
         {
-            if (this.selected_Tile == null)
-                this.selected_Tile = _Tile;
-            else if (_Tile != this.selected_Tile)
-                this.fortify_target = _Tile;
-        }
-    }
+            //if the main game has started?
+            //ok! - lets cancel everything...
+            if(this.selected_Tile == null)
+            {
+                //open up the "quit ui"
 
+            }
 
-    void handleLeftClick(string _current_state)
-    {
-
-        if (_current_state == RiskySandBox_Team.turn_state_waiting)
-        {
-            if (this.debugging)
-                GlobalFunctions.print("currently in the waiting state... returning", my_Team.current_turn_state);
-            return;
-        }
-
-        RaycastHit hit = my_RTSController.doRaycast();
-
-        RiskySandBox_Tile _current_Tile = null;
-
-        if(hit.collider != null)
-            _current_Tile = RiskySandBox_Tile.GET_RiskySandBox_Tile(hit.collider); // Get the component attached to the hit object
-        
-
-
-        if (_current_state == RiskySandBox_Team.turn_state_deploy)
-        {
-            handleLeftClick_deploy(_current_Tile);
-        }
-
-        else if (_current_state == RiskySandBox_Team.turn_state_attack)
-        {
-            handleLeftClick_attack(_current_Tile);
-        }
-
-        else if(_current_state == RiskySandBox_Team.turn_state_fortify)
-        {
-            handleLeftClick_fortify(_current_Tile);
+            cancel();
         }
 
 
     }
+
 
     public void cancelFromUI()
+    {
+        cancel();
+
+    }
+
+    public void cancel()
     {
         this.selected_Tile = null;
         this.attack_target = null;
         this.fortify_target = null;
-
     }
 
     public void confirmFromUI()
@@ -310,42 +230,15 @@ public partial class RiskySandBox_HumanPlayer : MonoBehaviour
     }
 
 
-    public void TRY_deploy()
-    {
-        int _n_Troops = this.slider_value.value;
-        RiskySandBox_Tile _Tile = this.selected_Tile;
-
-        if (this.debugging)
-            GlobalFunctions.print("asking server to deploy to " + _n_Troops + " to the Tile with ID = " + _Tile.ID,this);
-        
-
-        my_PhotonView.RPC("ClientInvokedRPC_deploy", RpcTarget.MasterClient, _Tile.ID, _n_Troops);//ask server to deploy...
-
-    }
-
-    public void TRY_attack()
-    {
-        int _n_troops = this.slider_value.value;
-
-        int _from_ID = selected_Tile.ID;
-        int _to_ID = attack_target.ID;
-
-        if (this.debugging)
-            GlobalFunctions.print("asking server to attack... _from_ID = " + _from_ID + ", _to_ID =  "+_to_ID +", _n_Troops = "+_n_troops,this);
 
 
-        my_PhotonView.RPC("ClientInvokedRPC_attack", RpcTarget.MasterClient, _from_ID, _to_ID, _n_troops,"NULLVALUEJUSTIGNOREFORNOW!!!83hvp2y");
-    }
     public void TRY_capture()
     {
         int _n_troops = this.slider_value.value ;
         my_PhotonView.RPC("ClientInvokedRPC_capture", RpcTarget.MasterClient, _n_troops);
     }
 
-    public void TRY_fortify()
-    {
-        my_PhotonView.RPC("ClientInvokedRPC_fortify", RpcTarget.MasterClient, selected_Tile.ID, fortify_target.ID, this.slider_value.value);
-    }
+
 
     public void TRY_nextState()
     {
@@ -357,31 +250,6 @@ public partial class RiskySandBox_HumanPlayer : MonoBehaviour
 
 
 
-    [PunRPC]
-    void ClientInvokedRPC_deploy(int _Tile_ID,int _n_troops,PhotonMessageInfo _PhotonMessageInfo)
-    {
-       
-        if (PrototypingAssets.run_server_code.value == false || _PhotonMessageInfo.Sender != this.my_PhotonView.Owner)
-            return;
-
-
-        if (this.debugging)
-            GlobalFunctions.print("received a deploy request from a client...", this,_Tile_ID,_n_troops,_PhotonMessageInfo);
-
-        RiskySandBox_Tile _Tile = RiskySandBox_Tile.GET_RiskySandBox_Tile(_Tile_ID);
-        RiskySandBox_MainGame.instance.deploy(my_Team, _Tile, _n_troops);
-    }
-
-    [PunRPC]
-    void ClientInvokedRPC_attack(int _from_ID,int _to_ID, int _n_troops,string _attack_method, PhotonMessageInfo _PhotonMessageInfo)
-    {
-        if (PrototypingAssets.run_server_code.value == false || _PhotonMessageInfo.Sender != this.my_PhotonView.Owner)
-            return;
-
-        RiskySandBox_Tile _from = RiskySandBox_Tile.GET_RiskySandBox_Tile(_from_ID);
-        RiskySandBox_Tile _to = RiskySandBox_Tile.GET_RiskySandBox_Tile(_to_ID);
-        RiskySandBox_MainGame.instance.attack(my_Team, _from, _to, _n_troops, _attack_method);
-    }
 
     [PunRPC]
     void ClientInvokedRPC_capture(int _n_troops, PhotonMessageInfo _PhotonMessageInfo)
@@ -392,19 +260,7 @@ public partial class RiskySandBox_HumanPlayer : MonoBehaviour
         RiskySandBox_MainGame.instance.capture(my_Team, _n_troops);
     }
 
-    [PunRPC]
-    void ClientInvokedRPC_fortify(int _from_ID,int _to_ID, int _n_troops, PhotonMessageInfo _PhotonMessageInfo)
-    {
-        if (PrototypingAssets.run_server_code.value == false || _PhotonMessageInfo.Sender != this.my_PhotonView.Owner)
-            return;
 
-        RiskySandBox_Tile _from = RiskySandBox_Tile.GET_RiskySandBox_Tile(_from_ID);
-        RiskySandBox_Tile _to = RiskySandBox_Tile.GET_RiskySandBox_Tile(_to_ID);
-        bool _fortified = RiskySandBox_MainGame.instance.fortify(my_Team, _from, _to, _n_troops);
-
-        if (_fortified == true)//if we successfully fortified....
-            RiskySandBox_MainGame.instance.goToNextTurnState(my_Team);
-    }
 
     //rpc to allow the player to move into the next "turn state"
     [PunRPC]

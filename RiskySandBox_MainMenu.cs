@@ -3,21 +3,37 @@ using UnityEngine;
 
 public partial class RiskySandBox_MainMenu : MonoBehaviour
 {
+    public static RiskySandBox_MainMenu instance;
+
     [SerializeField] bool debugging;
 
     [SerializeField] GameObject root_ui;
-    [SerializeField] int level_editor_scene_id;
 
     [SerializeField] UnityEngine.UI.Button play_Button;
 
     [SerializeField] UnityEngine.UI.InputField nickname_InputField;
+    [SerializeField] UnityEngine.UI.Button join_room_Button;
 
+
+
+    public UnityEngine.Events.UnityEvent Onenable_Inspector;
+
+
+    public ObservableBool enable_full_screen;
+
+
+    private void Awake()
+    {
+        instance = this;
+    }
 
 
     public void enable()
     {
         //enable the root ui!
         root_ui.SetActive(true);
+
+        Onenable_Inspector.Invoke();
 
     }
 
@@ -29,8 +45,23 @@ public partial class RiskySandBox_MainMenu : MonoBehaviour
 
 
 
+    public void EventReceiver_OnVariableUpdate_enable_full_screen(ObservableBool _enable_full_screen)
+    {
+        Screen.fullScreen = _enable_full_screen;
+    }
+
+
+    public void returnToMainMenu()
+    {
+        this.enable();
+    }
+    
+
+
+
     private void Start()
     {
+
         enable();
 
         if(Photon.Pun.PhotonNetwork.NickName == "")
@@ -48,21 +79,19 @@ public partial class RiskySandBox_MainMenu : MonoBehaviour
 
 
 
+
+
     void setNickNameFromInputField(string _incoming_value)
     {
         Photon.Pun.PhotonNetwork.NickName = _incoming_value;
     }
 
 
-
-
-  
-
-
-    public void levelEditor()
+    private void Update()
     {
-        UnityEngine.SceneManagement.SceneManager.LoadScene(level_editor_scene_id);
+        this.join_room_Button.interactable = Photon.Pun.PhotonNetwork.IsConnected;
     }
+
 
 
     public void quitGame()

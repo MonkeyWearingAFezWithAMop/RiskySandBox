@@ -14,10 +14,8 @@ public partial class RiskySandBox_Tile
 
         RiskySandBox_Tile _new_Tile_script = _GameObject.GetComponent<RiskySandBox_Tile>();
 
-        _new_Tile_script.ID = _id;
-
-        RiskySandBox_Tile.CACHE_GET_RiskySandBox_Tile[_id] = _new_Tile_script;
-
+        //make sure there isnt a tile with that id...
+        _new_Tile_script.ID.value = _id;
 
 
         //create the mesh for this tile so players can see / interact with the Tile...
@@ -25,6 +23,7 @@ public partial class RiskySandBox_Tile
         Mesh _new_Mesh = new Mesh();
         _new_Mesh.vertices = _mesh_verts.ToArray();
         _new_Mesh.triangles = _mesh_tris.ToArray();
+        _new_Mesh.RecalculateNormals();
 
         MeshFilter _MeshFilter = _GameObject.GetComponent<MeshFilter>();
         _MeshFilter.sharedMesh = _new_Mesh;
@@ -33,17 +32,11 @@ public partial class RiskySandBox_Tile
         _Collider.sharedMesh = _new_Mesh;
 
 
-        RiskySandBox_Tile.CACHE_GET_RiskySandBox_Tile_Colliders[_Collider] = _new_Tile_script;
-
-
-
-
-
         _GameObject.transform.position = _centre;
         _GameObject.transform.rotation = _rotation;
         _GameObject.transform.localScale = _scale;
 
-        _GameObject.name = "RiskySandBox_Tile - ID = " + _id;
+        
 
 
 

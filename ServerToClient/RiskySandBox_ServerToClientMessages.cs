@@ -16,11 +16,24 @@ public partial class RiskySandBox_ServerToClientMessages : MonoBehaviour
         RiskySandBox_MainGame.OnSET_my_Team_MultiplayerBridge += RiskySandBox_TileEventReceiver_OnSET_my_Team_MultiplayerBridge;
         RiskySandBox_MainGame.OnendGame_MultiplayerBridge += EventReceiver_OnendGame_MultiplayerBridge;
 
+        RiskySandBox_MainGame.OnstartGame_MultiplayerBridge += EventReceiver_OnstartGame_MultiplayerBridge;
+
         RiskySandBox_MainGame.Ondeploy_MultiplayerBridge += RiskySandBox_TeamEventReceiver_Ondeploy_MultiplayerBridge;
         RiskySandBox_MainGame.Onattack_MultiplayerBridge += EventReceiver_Onattack_MultiplayerBridge;
     }
 
 
+
+    void EventReceiver_OnstartGame_MultiplayerBridge()
+    {
+
+        if (PrototypingAssets.run_server_code == false)//if we are not the server...
+            return;
+
+        //tell the connected client(s) to load the map...
+        this.my_PhotonView.RPC("ServerInvokedRPC_loadMap", RpcTarget.Others, RiskySandBox_MainGame.instance.map_ID.value);
+
+    }
 
 
     void RiskySandBox_TileEventReceiver_OnSET_num_troops_MultiplayerBridge(int _Tile_ID,int _num_troops)
@@ -87,6 +100,17 @@ public partial class RiskySandBox_ServerToClientMessages : MonoBehaviour
         }
     }
 
+
+
+    [PunRPC]
+    void ServerInvokedRPC_loadMap(string _map_ID,PhotonMessageInfo _PhotonMessageInfo)
+    {
+        if (_PhotonMessageInfo.Sender.IsMasterClient == false)//only listen to the server!
+            return;
+
+        RiskySandBox_MainGame.instance.loadMap(_map_ID);
+
+    }
 
 
     //this is the actual rpc that get called on the clients...

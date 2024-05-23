@@ -3,12 +3,31 @@ using UnityEngine;
 
 public partial class RiskySandBox : MonoBehaviour
 {
+
+    public static string maps_folder_path { get { return Application.streamingAssetsPath + "/RiskySandBox/Maps"; } }
+
+
     public static RiskySandBox instance { get; private set; }
     [SerializeField] bool debugging;
 
 
     public ObservableString connect_room_name { get { return PRIVATE_connect_room_name; } }
     [SerializeField] ObservableString PRIVATE_connect_room_name;
+
+
+    public ObservableFloat current_time { get { return PRIVATE_current_time; } }
+    [SerializeField] ObservableFloat PRIVATE_current_time;
+
+
+    [SerializeField] ObservableBool enable_multiplayer;
+
+
+
+    void Awake()
+    {
+        instance = this;
+        //Debug.LogError("hello pun console");
+    }
 
 
     public void createMultiplayerRoomFromUI()
@@ -37,19 +56,38 @@ public partial class RiskySandBox : MonoBehaviour
         Photon.Pun.PhotonNetwork.JoinRoom(_room_name);
     }
 
-
-
-    private void Awake()
+    public void exitCurrentRoom()
     {
-        instance = this;
+        if (Photon.Pun.PhotonNetwork.InRoom == false)
+            return;
+        Photon.Pun.PhotonNetwork.LeaveRoom();
     }
+
+
 
 
     private void Start()
     {
-        Photon.Pun.PhotonNetwork.ConnectUsingSettings();
+        connectToPhoton();
     }
 
 
+    private void Update()
+    {
+        this.current_time.value += Time.deltaTime;
+    }
+
+
+
+    void connectToPhoton()
+    {
+        if (this.enable_multiplayer.value == false)
+            return;
+
+        if (Photon.Pun.PhotonNetwork.IsConnected == false)
+            Photon.Pun.PhotonNetwork.ConnectUsingSettings();
+        
+        Invoke("connectToPhoton", 2f);//make sure to always try and connect... this is useful if for some reason connection to photon drops for some reason...
+    }
 
 }

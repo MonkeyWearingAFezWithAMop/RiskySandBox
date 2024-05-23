@@ -6,6 +6,7 @@ public partial class RiskySandBox_MainGame
 
     public static event Action OnendGame_MultiplayerBridge;
     public static event Action OnendGame;
+    public UnityEngine.Events.UnityEvent OnendGame_Inspector;
 
 
 
@@ -27,12 +28,9 @@ public partial class RiskySandBox_MainGame
         this.game_setup_UI.SetActive(false);
         RiskySandBox_Tile.destroyAllTiles();
 
-
+        OnendGame_Inspector.Invoke();
         OnendGame?.Invoke();
 
-
-
-        UnityEngine.SceneManagement.SceneManager.LoadScene(RiskySandBox_EndGameScene.scene_ID);
         
 
     }

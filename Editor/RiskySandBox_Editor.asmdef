@@ -1,0 +1,19 @@
+{
+    "name": "RiskySandBox_Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:af30f36ea8d674cddad8879f0734b7b3",
+        "GUID:3481245c73603f64fa0ce28e4063d44c"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

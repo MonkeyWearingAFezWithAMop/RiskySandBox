@@ -55,9 +55,24 @@ public partial class RiskySandBox_MainGame
 
         if (_Tile.my_Team != _Team)//if the Tile doesn't belong to the Team...
         {
-            if (debugging)
-                GlobalFunctions.print("can't deploy troops to this Tile as the Tile does not belong to this Team... returning", this);
-            return;
+            if(RiskySandBox_MainGame.instance.enable_alliances)
+            {
+                
+                bool _is_ally = _Team.ally_ids.Contains(_Tile.my_Team.ID);
+
+                if (_is_ally == false || RiskySandBox_MainGame.instance.allow_deploy_to_ally_Tiles == false)//if it isnt an ally OR we are not allowed to deploy to ally Tiles
+                    return;//dont allow this...
+            }
+
+            else
+            {
+                if (debugging)
+                    GlobalFunctions.print("can't deploy troops to this Tile as the Tile does not belong to this Team... returning", this);
+                return;
+            }
+
+
+
         }
 
         RiskySandBox_MainGame.instance.SET_num_troops(_Tile.ID, _Tile.num_troops + _n_troops);

@@ -12,6 +12,8 @@ public partial class RiskySandBox_Resources : MonoBehaviour
 
     public static GameObject tile_prefab { get { return instance.PRIVATE_tile_prefab; } }
 
+    public static GameObject Bonus_prefab { get { return instance.PRIVATE_bonus_prefab; } }
+
 
 
 
@@ -19,6 +21,7 @@ public partial class RiskySandBox_Resources : MonoBehaviour
     [SerializeField] GameObject PRIVATE_tile_prefab;
     [SerializeField] private GameObject PRIVATE_human_player_prefab;
     [SerializeField] private GameObject PRIVATE_Team_prefab;
+    [SerializeField] private GameObject PRIVATE_bonus_prefab;
 
 
 

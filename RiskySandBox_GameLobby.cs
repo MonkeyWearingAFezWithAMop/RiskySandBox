@@ -18,14 +18,20 @@ public partial class RiskySandBox_GameLobby : MonoBehaviourPunCallbacks
     [SerializeField] List<UnityEngine.UI.Text> current_username_Texts = new List<UnityEngine.UI.Text>();
 
 
+    [SerializeField] ObservableBool game_started_ObservableBool;
+
+
 
 
     public override void OnEnable()
     {
         base.OnEnable();
 
-        PrototypingAssets.run_server_code.OnUpdate += EventReceiver_OnVariableUpdate_run_server_code;    //TODO - nope! lets call this is_host...
+        PrototypingAssets.run_server_code.OnUpdate += EventReceiver_OnVariableUpdate_run_server_code;    //TODO - nope! need to rethink this as with dedicated servers this is not correct????
         RiskySandBox_HumanPlayer.all_instances.OnUpdate += updatePlayersUI;
+
+        game_started_ObservableBool.OnUpdate += EventReceiver_OnVariableUpdate_game_started;
+        
     }
 
     public override void OnDisable()
@@ -34,6 +40,8 @@ public partial class RiskySandBox_GameLobby : MonoBehaviourPunCallbacks
 
         RiskySandBox_HumanPlayer.all_instances.OnUpdate -= updatePlayersUI;
         PrototypingAssets.run_server_code.OnUpdate -= EventReceiver_OnVariableUpdate_run_server_code;
+
+        game_started_ObservableBool.OnUpdate -= EventReceiver_OnVariableUpdate_game_started;
     }
 
 
@@ -44,10 +52,19 @@ public partial class RiskySandBox_GameLobby : MonoBehaviourPunCallbacks
     }
 
 
+    void EventReceiver_OnVariableUpdate_game_started(ObservableBool _game_started)
+    {
+        if(_game_started.value == true)
+        {
+            this.ui_root_Transform.gameObject.SetActive(false);
+        }
+    }
+
+
     private void Start()
     {
         startGame_Button.gameObject.SetActive((PrototypingAssets.run_server_code.value == true) && (RiskySandBox_MainGame.instance.game_started.value == false));
-        createMyHumanPlayer();
+        
         updatePlayersUI();
 
     }
@@ -57,7 +74,24 @@ public partial class RiskySandBox_GameLobby : MonoBehaviourPunCallbacks
     {
         base.OnJoinedRoom();
         createMyHumanPlayer();
+        ui_root_Transform.gameObject.SetActive(!RiskySandBox_MainGame.instance.game_started);
     }
+
+    public override void OnLeftRoom()
+    {
+        base.OnLeftRoom();
+        this.disable();
+
+    }
+
+
+    public void disable()
+    {
+        ui_root_Transform.gameObject.SetActive(false);
+    }
+
+
+
 
 
 
@@ -104,46 +138,6 @@ public partial class RiskySandBox_GameLobby : MonoBehaviourPunCallbacks
 
 
 
-
-
-    public void startGame()
-    {
-        if (PrototypingAssets.run_server_code.value == false)//if we are not the Server...
-            return;//we cant start the game... so return
-
-
-        
-        
-        for( int i = 0; i < RiskySandBox_HumanPlayer.all_instances.Count; i += 1)//foreach human player...
-        {
-            GameObject _new_Team_GO = PhotonNetwork.InstantiateRoomObject(RiskySandBox_Resources.Team_prefab.name, Vector3.zero, Quaternion.identity);//create a new team...
-            RiskySandBox_Team _new_Team = _new_Team_GO.GetComponent<RiskySandBox_Team>();
-            _new_Team.ID.value = i;//assign a unique id for the Team...
-
-
-            
-
-            RiskySandBox_HumanPlayer _HumanPlayer = RiskySandBox_HumanPlayer.all_instances[i];//assign the humanplayer team id to be this value aswell...
-            _HumanPlayer.my_Team_ID.value = i;
-
-        }
-
-
-
-        //foreach ai player...
-        //create a new team...
-        //assign a random color and material?
-
-        //todo ok lets also disable the lobby ui
-        ui_root_Transform.gameObject.SetActive(false);
-
-
-        RiskySandBox_MainGame.instance.startGame();
-        //TODO -throw up a temp screen that says 10... 9.... 8.... 7... 6... 5... 4... 3... 2... 1... go!
-        //this also gives time for the map to get loaded/synced to clients?
-
-
-    }
 
 
 
