@@ -15,6 +15,29 @@ public partial class RiskySandBox_HumanPlayer
             if (this.PRIVATE_attack_target != null)
                 PRIVATE_attack_target.is_attack_target.value = false;
 
+
+            //do some basic checks...
+
+            if (value == null)
+            {
+                PRIVATE_attack_target = null;
+                OnVariableUpdate_attack_target?.Invoke(this);
+                return;
+            }
+
+
+
+            if (value.my_Team == this.my_Team)
+                return;
+
+            if(this.selected_Tile != null)
+            {
+                //make sure there is a connection between selected_tile and value
+                if (selected_Tile.graph_connections.Contains(value.ID) == false)
+                    return;
+            }
+
+
             this.PRIVATE_attack_target = value;
 
             if (value != null)

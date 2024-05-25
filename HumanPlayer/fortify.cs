@@ -18,8 +18,14 @@ public partial class RiskySandBox_HumanPlayer
 
             this.PRIVATE_fortify_target = value;
 
-            if (this.PRIVATE_fortify_target != null)
+            if (value != null)
+            {
                 value.is_fortify_target.value = true;
+
+                if(this.selected_Tile != null)
+                    this.slider_value.value = this.selected_Tile.num_troops - RiskySandBox_Tile.min_troops_per_Tile;
+            }
+                
 
             OnVariableUpdate_fortify_target?.Invoke(this);
         }
@@ -41,7 +47,6 @@ public partial class RiskySandBox_HumanPlayer
             {
 
                 //TODO - make sure there is atleast 1 Tile that can be fortified to...
-                //TODO - make sure the player can "cancel" even when there is no fortify_target...
 
                 if (_current_Tile.num_troops > RiskySandBox_Tile.min_troops_per_Tile)
                     this.selected_Tile = _current_Tile;

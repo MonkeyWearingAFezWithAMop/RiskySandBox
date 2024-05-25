@@ -37,10 +37,12 @@ public partial class RiskySandBox_MainGame
 
     public ObservableInt capital_troop_generation { get { return this.PRIVATE_capital_troop_generation; } }
 
+    public ObservableInt n_stable_portals { get { return this.PRIVATE_n_stable_portals;} }
+    public ObservableInt n_unstable_portals { get { return this.PRIVATE_n_unstable_portals; } }
+    public ObservableInt n_blizards { get { return this.PRIVATE_n_blizards; } }
 
 
 
-    
 
 
 
@@ -215,6 +217,8 @@ public partial class RiskySandBox_MainGame
 
         else if(_current_state == RiskySandBox_Team.turn_state_attack)//attack -> fortify...
         {
+            if (this.debugging)
+                GlobalFunctions.print("putting the team into the fortify state", this);
             _Team.current_turn_state.value = RiskySandBox_Team.turn_state_fortify;
         }
 
@@ -225,6 +229,8 @@ public partial class RiskySandBox_MainGame
 
         else if(_current_state == RiskySandBox_Team.turn_state_fortify)//foritfy -> next team turn...
         {
+            if (this.debugging)
+                GlobalFunctions.print("ending the teams turn and starting the next teams turn", this);
 
             RiskySandBox_Team _next_Team = GET_nextTeam(_Team);
 

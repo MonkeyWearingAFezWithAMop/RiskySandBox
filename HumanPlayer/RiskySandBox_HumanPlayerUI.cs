@@ -25,6 +25,9 @@ public partial class RiskySandBox_HumanPlayerUI : MonoBehaviour
     [SerializeField] List<GameObject> permanent_capture_elements = new List<GameObject>();
 
 
+    [SerializeField] ObservableFloat PRIVATE_attack_victory_chance;
+
+
 
     private void Awake()
     {
@@ -141,6 +144,7 @@ public partial class RiskySandBox_HumanPlayerUI : MonoBehaviour
         {
             slider_value.min_value = 1;
             slider_value.max_value = _HumanPlayer.selected_Tile.num_troops - RiskySandBox_Tile.min_troops_per_Tile;
+
         }
         
     }

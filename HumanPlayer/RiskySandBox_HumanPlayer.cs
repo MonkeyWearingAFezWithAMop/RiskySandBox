@@ -10,6 +10,19 @@ public partial class RiskySandBox_HumanPlayer : MonoBehaviour
     public event Action<RiskySandBox_HumanPlayer> OnVariableUpdate_attack_target;
     public event Action<RiskySandBox_HumanPlayer> OnVariableUpdate_fortify_target;
 
+    public static RiskySandBox_HumanPlayer local_player
+    {
+        get
+        {
+            foreach(RiskySandBox_HumanPlayer _Player in RiskySandBox_HumanPlayer.all_instances)
+            {
+                if (_Player.my_PhotonView.IsMine == true)
+                    return _Player;
+            }
+            return null;
+        }
+    }
+
 
     [SerializeField] bool debugging;
 
@@ -21,6 +34,10 @@ public partial class RiskySandBox_HumanPlayer : MonoBehaviour
     public ObservableInt my_Team_ID { get { return PRIVATE_my_Team_ID; } }
     [SerializeField] ObservableInt PRIVATE_my_Team_ID;
 
+
+    //note sometimes you want to absolutely rampage across the map...
+    //e.g. at the end of the game you  want to just blast straight through anything in your path and send all surviving troops into the newly captured region...
+    [SerializeField] ObservableString control_scheme;
 
 
 
@@ -59,6 +76,7 @@ public partial class RiskySandBox_HumanPlayer : MonoBehaviour
 
 
         RiskySandBox_Team.OnVariableUpdate_current_turn_state_STATIC += EventReceiver_OnVariableUpdate_current_turn_state_STATIC;
+        RiskySandBox_Team.OnVariableUpdate_capture_end_ID_STATIC += EventReceiver_OnVariableUpdate_capture_end_ID_STATIC;
 
         RiskySandBox_MainGame.Ondeploy += EventReceiver_Ondeploy;
         RiskySandBox_MainGame.Onattack += EventReceiver_Onattack;
@@ -72,6 +90,7 @@ public partial class RiskySandBox_HumanPlayer : MonoBehaviour
         RiskySandBox_HumanPlayer.all_instances.Remove(this);
 
         RiskySandBox_Team.OnVariableUpdate_current_turn_state_STATIC -= EventReceiver_OnVariableUpdate_current_turn_state_STATIC;
+        RiskySandBox_Team.OnVariableUpdate_capture_end_ID_STATIC -= EventReceiver_OnVariableUpdate_capture_end_ID_STATIC;
 
         RiskySandBox_MainGame.Ondeploy -= EventReceiver_Ondeploy;
         RiskySandBox_MainGame.Onattack -= EventReceiver_Onattack;
@@ -90,7 +109,10 @@ public partial class RiskySandBox_HumanPlayer : MonoBehaviour
             return;
 
         RiskySandBox_Tile _current_Tile = RiskySandBox_CameraControls.current_hovering_Tile;
-       
+
+
+
+
 
         //if we left click on a tile?
         if (Input.GetMouseButtonDown(0))
@@ -142,6 +164,42 @@ public partial class RiskySandBox_HumanPlayer : MonoBehaviour
             cancel();
         }
 
+        if(Input.GetKeyDown(KeyCode.Space) == true)
+        {
+            //"confirm the current action"
+            
+            if(my_Team.current_turn_state == RiskySandBox_Team.turn_state_deploy && this.selected_Tile != null)//so if we are in deploy mode? and we have a tile selected?
+            {
+                TRY_deploy();
+            }
+
+            else if(my_Team.current_turn_state == RiskySandBox_Team.turn_state_attack && this.selected_Tile != null)
+            {
+                if (this.attack_target != null)
+                    TRY_attack();
+                
+                else
+                {
+                    this.attack_target = RiskySandBox_CameraControls.current_hovering_Tile;
+                    TRY_attack();
+                }
+
+            
+                
+            }
+
+            else if(my_Team.current_turn_state == RiskySandBox_Team.turn_state_capture)
+            {
+                TRY_capture();
+            }
+            else if(my_Team.current_turn_state == RiskySandBox_Team.turn_state_fortify && this.selected_Tile != null && this.fortify_target != null)
+            {
+                TRY_fortify();
+            }
+
+
+        }
+
 
     }
 
@@ -187,9 +245,24 @@ public partial class RiskySandBox_HumanPlayer : MonoBehaviour
         if (_Team != my_Team)
             return;
 
-        this.selected_Tile = null;
-        this.attack_target = null;
-        this.fortify_target = null;
+
+        if(_Team.current_turn_state.previous_value == RiskySandBox_Team.turn_state_capture && _Team.current_turn_state == RiskySandBox_Team.turn_state_attack)
+        {
+            //we are going to select the new tile...
+            this.selected_Tile = _Team.capture_target;
+            this.attack_target = null;
+            this.fortify_target = null;
+        }
+        else
+        {
+            this.selected_Tile = null;
+            this.attack_target = null;
+            this.fortify_target = null;
+
+        }
+
+
+        updateCaptureSlider();
     }
 
     void EventReceiver_Ondeploy(RiskySandBox_MainGame.EventInfo_Ondeploy _EventInfo)
@@ -232,11 +305,6 @@ public partial class RiskySandBox_HumanPlayer : MonoBehaviour
 
 
 
-    public void TRY_capture()
-    {
-        int _n_troops = this.slider_value.value ;
-        my_PhotonView.RPC("ClientInvokedRPC_capture", RpcTarget.MasterClient, _n_troops);
-    }
 
 
 
@@ -250,15 +318,6 @@ public partial class RiskySandBox_HumanPlayer : MonoBehaviour
 
 
 
-
-    [PunRPC]
-    void ClientInvokedRPC_capture(int _n_troops, PhotonMessageInfo _PhotonMessageInfo)
-    {
-        if (PrototypingAssets.run_server_code.value == false || _PhotonMessageInfo.Sender != this.my_PhotonView.Owner)
-            return;
-
-        RiskySandBox_MainGame.instance.capture(my_Team, _n_troops);
-    }
 
 
 

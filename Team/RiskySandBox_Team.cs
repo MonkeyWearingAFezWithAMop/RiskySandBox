@@ -16,6 +16,14 @@ public partial class RiskySandBox_Team
 
     public static event Action<RiskySandBox_Team> OnVariableUpdate_killer_ID_STATIC;
 
+    public static event Action<RiskySandBox_Team> OnVariableUpdate_assassin_target_ID_STATIC;
+
+
+    /// <summary>
+    /// called whenever a RiskySandBox_Team.capture_end_ID value changes...
+    /// </summary>
+    public static event Action<RiskySandBox_Team> OnVariableUpdate_capture_end_ID_STATIC;
+
     public static readonly string turn_state_deploy = "deploy";
     public static readonly string turn_state_attack = "attack";
     public static readonly string turn_state_fortify = "fortify";
@@ -91,6 +99,17 @@ public partial class RiskySandBox_Team
 
 
     public ObservableInt assassin_target_ID { get { return this.PRIVATE_assassin_target_ID; } }
+    public RiskySandBox_Team assassin_target
+    {
+        get
+        {
+            if (this.assassin_target_ID.value == null_ID)
+                return null;
+            return RiskySandBox_Team.GET_RiskySandBox_Team(assassin_target_ID);
+        }
+    }
+
+    public ObservableBool show_assassin_target_indicator { get { return this.PRIVATE_show_assassin_target_indicator; } }
 
     /// <summary>
     /// the team who killed this Team (took the last terrotory...
@@ -106,6 +125,8 @@ public partial class RiskySandBox_Team
         RiskySandBox_MainGame.OnSET_my_Team += RiskySandBox_TileEventReceiver_OnSET_my_Team_STATIC;
         this.defeated.OnUpdate += EventReceiver_OnVariableUpdate_defeated;
         this.ID.OnUpdate += delegate { OnVariableUpdate_ID_STATIC?.Invoke(this); };
+        this.capture_end_ID.OnUpdate += delegate { RiskySandBox_Team.OnVariableUpdate_capture_end_ID_STATIC?.Invoke(this); };
+        this.assassin_target_ID.OnUpdate += delegate { RiskySandBox_Team.OnVariableUpdate_assassin_target_ID_STATIC?.Invoke(this); };
 
         //tell everyone my killer id has just changed! - this is important for assassin mode & to transfer the terrotory cards!
         this.killer_ID.OnUpdate += delegate { RiskySandBox_Team.OnVariableUpdate_killer_ID_STATIC?.Invoke(this); };

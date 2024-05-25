@@ -105,7 +105,30 @@ public partial class RiskySandBox_MainGame
                 _Team.assassin_target_ID.value = _Team_target;
             }
 
+
         }
+
+        //TODO - this.createInitialBlizards() or createBlizards(n)... so that way as time goes on we can "shrink" the map with more and more blizards to force the endgame...
+        for(int _b = 0; _b < PRIVATE_n_blizards; _b += 1)
+        {
+            Debug.LogWarning("WARNING - blizards are unimplemented...");
+        }
+
+        //TODO - this.createInitialStablePortals()
+        for (int _sp = 0; _sp < PRIVATE_n_stable_portals; _sp += 1)
+        {
+            Debug.LogWarning("WARNING - stable portals are unimplemented...");
+        }
+
+        //TODO - this.createInitialUnStablePortals()
+        for (int _up = 0; _up < PRIVATE_n_unstable_portals; _up += 1)
+        {
+            Debug.LogWarning("WARNING - unstable portals are unimplemented...");
+        }
+
+
+
+
 
 
         if (this.PRIVATE_capitals_mode.value == true)//if we are using capitals mode...

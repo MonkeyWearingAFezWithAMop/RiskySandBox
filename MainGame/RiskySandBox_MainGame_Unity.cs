@@ -16,6 +16,9 @@ public partial class RiskySandBox_MainGame : MonoBehaviour
     [SerializeField] GameObject PRIVATE_game_setup_UI;
     [SerializeField] ObservableInt PRIVATE_max_num_cards;
     [SerializeField] ObservableInt PRIVATE_capital_troop_generation;
+    [SerializeField] ObservableInt PRIVATE_n_stable_portals;
+    [SerializeField] ObservableInt PRIVATE_n_unstable_portals;
+    [SerializeField] ObservableInt PRIVATE_n_blizards;
 
 
 
