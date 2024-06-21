@@ -6,6 +6,7 @@ public partial class RiskySandBox_LevelEditor : MonoBehaviour
 {
     public static bool is_enabled;
     public static ObservableBool is_editing_bonus { get { return instance.PRIVATE_is_editing_bonus; } }
+    public static ObservableBool is_graph_mode { get { return instance.PRIVATE_is_graph_mode; } }
 
     public static RiskySandBox_LevelEditor instance;
 
@@ -14,6 +15,7 @@ public partial class RiskySandBox_LevelEditor : MonoBehaviour
 
 
     [SerializeField] ObservableBool PRIVATE_is_editing_bonus;
+    [SerializeField] ObservableBool PRIVATE_is_graph_mode;
 
     [SerializeField] bool block_Update = false;
 
@@ -27,6 +29,7 @@ public partial class RiskySandBox_LevelEditor : MonoBehaviour
 
 
     public static event Action Onenable;
+    public static event Action Ondisable;
 
 
     [SerializeField] ObservableBool show_escape_menu;
@@ -129,6 +132,7 @@ public partial class RiskySandBox_LevelEditor : MonoBehaviour
         ui_root.SetActive(false);
         block_Update = true;
         RiskySandBox_LevelEditor.is_enabled = false;
+        Ondisable?.Invoke();
 
     }
 

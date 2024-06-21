@@ -9,6 +9,7 @@ public partial class RiskySandBox_Team
 
     public static event Action<RiskySandBox_Team> OnVariableUpdate_defeated_STATIC;
 
+
     /// <summary>
     /// should be invoked whenever a Teams "ID" changes...
     /// </summary>
@@ -17,6 +18,12 @@ public partial class RiskySandBox_Team
     public static event Action<RiskySandBox_Team> OnVariableUpdate_killer_ID_STATIC;
 
     public static event Action<RiskySandBox_Team> OnVariableUpdate_assassin_target_ID_STATIC;
+
+    public static event Action<RiskySandBox_Team> OnVariableUpdate_is_my_turn_STATIC;
+
+    public static event Action<RiskySandBox_Team> OnUpdate_territory_card_IDs_STATIC;
+
+    public static event Action<RiskySandBox_Team> OnUpdate_ally_ids_STATIC;
 
 
     /// <summary>
@@ -36,7 +43,7 @@ public partial class RiskySandBox_Team
 
 
    
-    public List<int> ally_ids = new List<int>();
+    public ObservableList<int> ally_ids = new ObservableList<int>();
 
 
     /// <summary>
@@ -57,30 +64,26 @@ public partial class RiskySandBox_Team
 
     [SerializeField] List<Material> Team_Materials = new List<Material>();
     [SerializeField] List<Material> Bonus_Materials = new List<Material>();
+    [SerializeField] List<Color> text_Colors = new List<Color>();
 
 
 
+
+    public Material bonus_border_Material { get { return this.my_Material; } }
     public Material my_Material { get { return this.Team_Materials[this.ID.value]; } }
 
     public Material my_Bonus_Material { get { return this.Bonus_Materials[this.ID.value]; } }
 
     public Color my_Color { get { return Team_Materials.Select(x => x.color).ToList()[this.ID.value]; } }
 
-
-    public Color complementary_Color
-    {
-        get
-        {
-            float r = 1f - my_Color.r;
-            float g = 1f - my_Color.g;
-            float b = 1f - my_Color.b;
-
-            return new Color(r, g, b);
-        }
-    }
+    public Color text_Color { get { return text_Colors[this.ID.value]; } }
 
 
-    public int num_cards { get { return 0; } }//TODO - nope return the actual number of cards....
+
+    /// <summary>
+    /// how many territory cards does the team have... (this.territory_card_IDs.Count()...)
+    /// </summary>
+    public int num_cards { get { return this.territory_card_IDs.Count(); } }
 
 
     public ObservableInt ID {get { return PRIVATE_ID; }}
@@ -115,21 +118,37 @@ public partial class RiskySandBox_Team
     /// the team who killed this Team (took the last terrotory...
     /// </summary>
     public ObservableInt killer_ID { get { return this.PRIVATE_killer_ID; } }
-    
 
+
+    public List<RiskySandBox_Tile> my_Tiles { get { return RiskySandBox_Tile.all_instances.Where(x => x.my_Team_ID.value == this.ID.value).ToList(); } }
+
+    public ObservableList<int> territory_card_IDs = new ObservableList<int>();
+
+    /// <summary>
+    /// has the team "caputred" a Tile on the turn (required for giving "territory cards")
+    /// </summary>
+    public ObservableBool has_captured_Tile { get { return this.PRIVATE_has_captured_Tile; } }
+
+
+    
 
 
     private void Awake()
     {
         all_instances.Add(this);
         RiskySandBox_MainGame.OnSET_my_Team += RiskySandBox_TileEventReceiver_OnSET_my_Team_STATIC;
-        this.defeated.OnUpdate += EventReceiver_OnVariableUpdate_defeated;
-        this.ID.OnUpdate += delegate { OnVariableUpdate_ID_STATIC?.Invoke(this); };
+
+        this.defeated.OnUpdate += delegate { RiskySandBox_Team.OnVariableUpdate_defeated_STATIC?.Invoke(this); };
+        this.ID.OnUpdate += delegate { RiskySandBox_Team.OnVariableUpdate_ID_STATIC?.Invoke(this); };
+        this.ID.OnUpdate += delegate { this.gameObject.name = "RiskySandBox_Team with id = " + this.ID; };
         this.capture_end_ID.OnUpdate += delegate { RiskySandBox_Team.OnVariableUpdate_capture_end_ID_STATIC?.Invoke(this); };
         this.assassin_target_ID.OnUpdate += delegate { RiskySandBox_Team.OnVariableUpdate_assassin_target_ID_STATIC?.Invoke(this); };
-
-        //tell everyone my killer id has just changed! - this is important for assassin mode & to transfer the terrotory cards!
+        this.is_my_turn.OnUpdate += delegate { RiskySandBox_Team.OnVariableUpdate_is_my_turn_STATIC?.Invoke(this); };
         this.killer_ID.OnUpdate += delegate { RiskySandBox_Team.OnVariableUpdate_killer_ID_STATIC?.Invoke(this); };
+        this.territory_card_IDs.OnUpdate += delegate { RiskySandBox_Team.OnUpdate_territory_card_IDs_STATIC?.Invoke(this); };
+        this.ally_ids.OnUpdate += delegate { RiskySandBox_Team.OnUpdate_ally_ids_STATIC?.Invoke(this); };
+
+        
         
     }
 
@@ -148,17 +167,6 @@ public partial class RiskySandBox_Team
         }
         return null;
     }
-
-
-
-    public void EventReceiver_OnVariableUpdate_defeated(ObservableBool _defeated)
-    {
-        //if defreated is now true?
-        //fantastic! - lets tell everyone that a team is now defeated...
-        if(defeated.value == true)
-            RiskySandBox_Team.OnVariableUpdate_defeated_STATIC?.Invoke(this);
-    }
-
 
 
     private void Update()
@@ -193,10 +201,48 @@ public partial class RiskySandBox_Team
 
         if (_Tile.my_Team == this)
             this.n_Tiles.value += 1;
+    }
 
 
+    public void addTerritoryCard(int _ID)
+    {
+        Debug.LogWarning("WARNING - need to fire a multiplayer event!");
+        this.territory_card_IDs.Add(_ID);
+        //add the terrotiry card to this teams list!
+        //tell the multiplayer messages that this has occured...
+    }
 
-    }    
+    public void removeTerritoryCard(int _ID)
+    {
+        Debug.LogWarning("WARNING - need to fire a multiplayer event!");
+        this.territory_card_IDs.Remove(_ID);
+        //add the terrotiry card to this teams list!
+        //tell the multipalyer messages that this has occured....
+    }
+
+
+    public void createAlliance(RiskySandBox_Team _other)
+    {
+        Debug.LogWarning("WARNING - need to fire a multiplayer event!");
+
+        if (this.ally_ids.Contains(_other.ID) == false)
+            this.ally_ids.Add(_other.ID);
+
+        //tell everyone my allies have changed?
+
+    }
+
+    public void breakAlliance(RiskySandBox_Team _other)
+    {
+        Debug.LogWarning("need to fire a multiplayer event!");
+        if(this.ally_ids.Contains(_other.ID) == true)
+            this.ally_ids.Remove(_other.ID);
+
+        //tell everyone my allies have changed?
+
+    }
+
+
 
 
 }

@@ -140,14 +140,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84787ef3c17d74148a2e1a92ad274f09, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  overrideUI_flag: 0
-  overrideUI_value: 0
   debugging: 0
   PRIVATE_value: 0
   PRIVATE_previous_value: 0
   PRIVATE_min_value: -2147483648
   PRIVATE_max_value: 2147483647
-  PRIVATE_my_MultiplayerSettings: {fileID: 0}
+  PRIVATE_my_MultiplayerSettings: {fileID: 6244747003774958094}
   OnUpdate_Inspector:
     m_PersistentCalls:
       m_Calls:
@@ -305,7 +303,7 @@ MonoBehaviour:
   debugging: 0
   PRIVATE_value: 0
   PRIVATE_previous_value: 0
-  PRIVATE_my_MultiplayerSettings: {fileID: 0}
+  PRIVATE_my_MultiplayerSettings: {fileID: 1532625972751139946}
   OnUpdate_Inspector:
     m_PersistentCalls:
       m_Calls: []
@@ -382,7 +380,7 @@ MonoBehaviour:
   debugging: 0
   PRIVATE_value: 0
   PRIVATE_previous_value: 0
-  PRIVATE_my_MultiplayerSettings: {fileID: 0}
+  PRIVATE_my_MultiplayerSettings: {fileID: 7405329431862985525}
   OnUpdate_Inspector:
     m_PersistentCalls:
       m_Calls: []
@@ -458,7 +456,7 @@ MonoBehaviour:
   debugging: 0
   PRIVATE_value: 0
   PRIVATE_previous_value: 0
-  PRIVATE_my_MultiplayerSettings: {fileID: 0}
+  PRIVATE_my_MultiplayerSettings: {fileID: 4411613809635965873}
   OnUpdate_Inspector:
     m_PersistentCalls:
       m_Calls: []
@@ -531,14 +529,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84787ef3c17d74148a2e1a92ad274f09, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  overrideUI_flag: 0
-  overrideUI_value: 0
   debugging: 0
   PRIVATE_value: 0
   PRIVATE_previous_value: 0
   PRIVATE_min_value: -2147483648
   PRIVATE_max_value: 2147483647
-  PRIVATE_my_MultiplayerSettings: {fileID: 0}
+  PRIVATE_my_MultiplayerSettings: {fileID: 7513855248871654372}
   OnUpdate_Inspector:
     m_PersistentCalls:
       m_Calls: []
@@ -590,7 +586,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   debugging: 0
-  authority_type: 0
+  authority_type: 1
   PRIVATE_synchronise_immediately: 1
   PRIVATE_auto_resync_rate: 0
 --- !u!114 &2470924641263193272
@@ -605,14 +601,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84787ef3c17d74148a2e1a92ad274f09, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  overrideUI_flag: 0
-  overrideUI_value: 0
   debugging: 0
   PRIVATE_value: 0
   PRIVATE_previous_value: 0
   PRIVATE_min_value: -2147483648
   PRIVATE_max_value: 2147483647
-  PRIVATE_my_MultiplayerSettings: {fileID: 0}
+  PRIVATE_my_MultiplayerSettings: {fileID: 7432011437550387637}
   OnUpdate_Inspector:
     m_PersistentCalls:
       m_Calls: []
@@ -684,7 +678,7 @@ MonoBehaviour:
   PRIVATE_previous_value: 0
   PRIVATE_min_value: -Infinity
   PRIVATE_max_value: Infinity
-  PRIVATE_my_MultiplayerSettings: {fileID: 0}
+  PRIVATE_my_MultiplayerSettings: {fileID: 7679596347659372520}
   OnUpdate_Inspector:
     m_PersistentCalls:
       m_Calls: []
@@ -877,14 +871,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84787ef3c17d74148a2e1a92ad274f09, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  overrideUI_flag: 0
-  overrideUI_value: 0
   debugging: 0
   PRIVATE_value: 0
   PRIVATE_previous_value: 0
   PRIVATE_min_value: -2147483648
   PRIVATE_max_value: 2147483647
-  PRIVATE_my_MultiplayerSettings: {fileID: 0}
+  PRIVATE_my_MultiplayerSettings: {fileID: 646865187582127414}
   OnUpdate_Inspector:
     m_PersistentCalls:
       m_Calls: []
@@ -952,14 +944,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84787ef3c17d74148a2e1a92ad274f09, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  overrideUI_flag: 0
-  overrideUI_value: 0
   debugging: 0
   PRIVATE_value: 0
   PRIVATE_previous_value: 0
   PRIVATE_min_value: -2147483648
   PRIVATE_max_value: 2147483647
-  PRIVATE_my_MultiplayerSettings: {fileID: 0}
+  PRIVATE_my_MultiplayerSettings: {fileID: 7024655047011122255}
   OnUpdate_Inspector:
     m_PersistentCalls:
       m_Calls: []
@@ -1025,6 +1015,7 @@ MonoBehaviour:
   my_ObservableStrings:
   - {fileID: 3258444051546386238}
   my_ObservableVector3s: []
+  search_Transforms: []
 --- !u!1 &4830238524041068737
 GameObject:
   m_ObjectHideFlags: 0
@@ -1086,14 +1077,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84787ef3c17d74148a2e1a92ad274f09, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  overrideUI_flag: 0
-  overrideUI_value: 0
   debugging: 0
   PRIVATE_value: 0
   PRIVATE_previous_value: 0
   PRIVATE_min_value: -2147483648
   PRIVATE_max_value: 2147483647
-  PRIVATE_my_MultiplayerSettings: {fileID: 0}
+  PRIVATE_my_MultiplayerSettings: {fileID: 5533814936422933915}
   OnUpdate_Inspector:
     m_PersistentCalls:
       m_Calls: []
@@ -1405,14 +1394,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84787ef3c17d74148a2e1a92ad274f09, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  overrideUI_flag: 0
-  overrideUI_value: 0
   debugging: 0
   PRIVATE_value: 0
   PRIVATE_previous_value: 0
   PRIVATE_min_value: -2147483648
   PRIVATE_max_value: 2147483647
-  PRIVATE_my_MultiplayerSettings: {fileID: 0}
+  PRIVATE_my_MultiplayerSettings: {fileID: 4091136577623358575}
   OnUpdate_Inspector:
     m_PersistentCalls:
       m_Calls: []
@@ -1558,14 +1545,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84787ef3c17d74148a2e1a92ad274f09, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  overrideUI_flag: 0
-  overrideUI_value: 0
   debugging: 0
   PRIVATE_value: 0
   PRIVATE_previous_value: 0
   PRIVATE_min_value: -2147483648
   PRIVATE_max_value: 2147483647
-  PRIVATE_my_MultiplayerSettings: {fileID: 0}
+  PRIVATE_my_MultiplayerSettings: {fileID: 1455279760122282527}
   OnUpdate_Inspector:
     m_PersistentCalls:
       m_Calls: []
@@ -1693,6 +1678,8 @@ MonoBehaviour:
   remaining_turn_length_Text: {fileID: 4152041770307103280}
   turn_timer_Image: {fileID: 2927538381932644212}
   UI_background_Image: {fileID: 4913642535203629456}
+  num_troops_Text: {fileID: 6202260174219402424}
+  num_Tiles_Text: {fileID: 8798533515001651940}
 --- !u!1 &7809787523613380221
 GameObject:
   m_ObjectHideFlags: 0
@@ -1754,14 +1741,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84787ef3c17d74148a2e1a92ad274f09, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  overrideUI_flag: 0
-  overrideUI_value: 0
   debugging: 0
   PRIVATE_value: 0
   PRIVATE_previous_value: 0
   PRIVATE_min_value: -2147483648
   PRIVATE_max_value: 2147483647
-  PRIVATE_my_MultiplayerSettings: {fileID: 0}
+  PRIVATE_my_MultiplayerSettings: {fileID: 7755620635656183167}
   OnUpdate_Inspector:
     m_PersistentCalls:
       m_Calls: []
@@ -1828,14 +1813,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84787ef3c17d74148a2e1a92ad274f09, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  overrideUI_flag: 0
-  overrideUI_value: 0
   debugging: 0
   PRIVATE_value: 0
   PRIVATE_previous_value: 0
   PRIVATE_min_value: -2147483648
   PRIVATE_max_value: 2147483647
-  PRIVATE_my_MultiplayerSettings: {fileID: 0}
+  PRIVATE_my_MultiplayerSettings: {fileID: 1393031875657580144}
   OnUpdate_Inspector:
     m_PersistentCalls:
       m_Calls:
@@ -1914,15 +1897,89 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84787ef3c17d74148a2e1a92ad274f09, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  overrideUI_flag: 0
-  overrideUI_value: 0
   debugging: 0
   PRIVATE_value: 0
   PRIVATE_previous_value: 0
   PRIVATE_min_value: -2147483648
   PRIVATE_max_value: 2147483647
-  PRIVATE_my_MultiplayerSettings: {fileID: 0}
+  PRIVATE_my_MultiplayerSettings: {fileID: 8778915924719579109}
   OnUpdate_Inspector:
+    m_PersistentCalls:
+      m_Calls: []
+  player_prefs_string: 
+  write_player_prefs: 0
+--- !u!1 &8553023406104995396
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2938719445679017016}
+  - component: {fileID: 7161576345605230220}
+  - component: {fileID: 4526840831157286131}
+  m_Layer: 0
+  m_Name: PRIVATE_has_captured_Tile
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2938719445679017016
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8553023406104995396}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6490471042363777022}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7161576345605230220
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8553023406104995396}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 997c372bbd204403982496e5eb9f9169, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  debugging: 0
+  authority_type: 1
+  PRIVATE_synchronise_immediately: 1
+  PRIVATE_auto_resync_rate: 0
+--- !u!114 &4526840831157286131
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8553023406104995396}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41bc5b0ec6346974d8ff6db36d8413f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  debugging: 0
+  PRIVATE_value: 0
+  PRIVATE_previous_value: 0
+  PRIVATE_my_MultiplayerSettings: {fileID: 7161576345605230220}
+  OnUpdate_Inspector:
+    m_PersistentCalls:
+      m_Calls: []
+  OnUpdate_true_Inspector:
+    m_PersistentCalls:
+      m_Calls: []
+  OnUpdate_false_Inspector:
     m_PersistentCalls:
       m_Calls: []
   player_prefs_string: 
@@ -2025,6 +2082,7 @@ Transform:
   - {fileID: 5109071391380814113}
   - {fileID: 5845246842031962319}
   - {fileID: 422115121418452201}
+  - {fileID: 2938719445679017016}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &84041259316021500
@@ -2041,7 +2099,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PRIVATE_current_turn_state: {fileID: 3258444051546386238}
   PRIVATE_deployable_troops: {fileID: 8674451680115151800}
-  ally_ids: 
+  ally_ids:
+    items: 
   Team_Materials:
   - {fileID: 2100000, guid: 325f9cfd7732f5a42b24dbe52efe7e1b, type: 2}
   - {fileID: 2100000, guid: 6e88382f749784a27a19aab26542d4a1, type: 2}
@@ -2076,6 +2135,25 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 72e341bb84af246e2acfd66aac8c863b, type: 2}
   - {fileID: 2100000, guid: f5b08df260c714b27a658df3434abaf0, type: 2}
   - {fileID: 2100000, guid: b4797755e105743ce8926463b9239502, type: 2}
+  text_Colors:
+  - {r: 0, g: 0, b: 0, a: 1}
+  - {r: 0, g: 0, b: 0, a: 1}
+  - {r: 1, g: 1, b: 1, a: 1}
+  - {r: 0, g: 0, b: 0, a: 1}
+  - {r: 0, g: 0, b: 0, a: 1}
+  - {r: 0, g: 0, b: 0, a: 1}
+  - {r: 0, g: 0, b: 0, a: 1}
+  - {r: 0, g: 0, b: 0, a: 1}
+  - {r: 0, g: 0, b: 0, a: 1}
+  - {r: 0, g: 0, b: 0, a: 1}
+  - {r: 0, g: 0, b: 0, a: 1}
+  - {r: 0, g: 0, b: 0, a: 1}
+  - {r: 0, g: 0, b: 0, a: 1}
+  - {r: 0, g: 0, b: 0, a: 1}
+  - {r: 0, g: 0, b: 0, a: 1}
+  - {r: 0, g: 0, b: 0, a: 1}
+  territory_card_IDs:
+    items: 
   debugging: 1
   PRIVATE_capture_start_ID: {fileID: 2015534534181932759}
   PRIVATE_capture_end_ID: {fileID: 6282968805912178192}
@@ -2087,6 +2165,7 @@ MonoBehaviour:
   PRIVATE_assassin_target_ID: {fileID: 2470924641263193272}
   PRIVATE_killer_ID: {fileID: 4570596547718261173}
   PRIVATE_show_assassin_target_indicator: {fileID: 6213170962782411750}
+  PRIVATE_has_captured_Tile: {fileID: 4526840831157286131}
   PRIVATE_end_turn_time_stamp: {fileID: 3164211652547533943}
   PRIVATE_is_my_turn: {fileID: 6751197870892975576}
   PRIVATE_my_UI: {fileID: 4896786512353042642}

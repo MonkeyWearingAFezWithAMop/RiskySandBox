@@ -34,12 +34,6 @@ public partial class RiskySandBox_HumanPlayer_MainGameUI : MonoBehaviour
 
         
         PRIVATE_team_info_shift.OnUpdate += delegate { doThing(); };
-
-        
-
-
-
-
     }
 
     void TeamEventReceiver_OnVariableUpdate_ID_STATIC(RiskySandBox_Team _Team)

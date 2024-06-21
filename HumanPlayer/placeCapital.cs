@@ -5,17 +5,12 @@ using Photon.Pun;
 public partial class RiskySandBox_HumanPlayer
 {
 
-    void handleLeftClick_placeCapital()
-    {
-        TRY_placeCapital();
-    }
 
-
-    public void TRY_placeCapital()
+    public void TRY_placeCapital(RiskySandBox_Tile _Tile)
     {
-        if (RiskySandBox_CameraControls.current_hovering_Tile == null)
+        if (_Tile == null)
             return;
-        my_PhotonView.RPC("ClientInvokedRPC_placeCapital", RpcTarget.MasterClient, (int)RiskySandBox_CameraControls.current_hovering_Tile.ID);
+        my_PhotonView.RPC("ClientInvokedRPC_placeCapital", RpcTarget.MasterClient, (int)_Tile.ID);
     }
 
 

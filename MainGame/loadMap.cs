@@ -111,7 +111,7 @@ public partial class RiskySandBox_MainGame
                     RiskySandBox_Tile _Tile = RiskySandBox_Tile.GET_RiskySandBox_Tile(_key);
                     if (_Tile != null)
                     {
-                        _Tile.graph_connections.AddRange(_connections);
+                        _Tile.graph_connections_IDs.AddRange(_connections);
 
                     }
 

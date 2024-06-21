@@ -47,6 +47,26 @@ public partial class RiskySandBox_LevelEditor_TileCreation : MonoBehaviour
 
         RiskySandBox_LevelEditorHandle.all_instances.OnUpdate += delegate { fullUpdate(); };
         RiskySandBox_LevelEditorHandle.OnUpdate_position_STATIC += delegate { fullUpdate(); };
+
+        RiskySandBox_LevelEditor.Ondisable += RiskySandBox_LevelEditorEventReceiver_Ondisable;
+
+
+        this.enable_behaviour.OnUpdate += delegate
+        {
+            if(this.enable_behaviour.previous_value == true)
+            {
+                RiskySandBox_LevelEditorHandle.destroyAllHandles();
+            }
+            this.fullUpdate();
+        };
+
+
+    }
+
+
+    void RiskySandBox_LevelEditorEventReceiver_Ondisable()
+    {
+        this.enable_behaviour.value = false;
     }
 
 
@@ -60,6 +80,14 @@ public partial class RiskySandBox_LevelEditor_TileCreation : MonoBehaviour
     public void fullUpdate()
     {
         this.my_ShapeCreator.shapes[0].points.Clear();
+        this.my_LineRenderer.positionCount = this.my_ShapeCreator.shapes[0].points.Count;
+        this.my_LineRenderer.SetPositions(this.my_ShapeCreator.shapes[0].points.ToArray());
+        try
+        {
+            this.my_ShapeCreator.UpdateMeshDisplay();
+        }
+        catch { }
+        
 
         if (this.enable_behaviour == false)
             return;
@@ -74,16 +102,14 @@ public partial class RiskySandBox_LevelEditor_TileCreation : MonoBehaviour
         {
             my_ShapeCreator.UpdateMeshDisplay();//DO NOT LET THE PROGRAM CRASH if this goes wrong...
         }
-        catch
-        {
-
-        }
+        catch { }
 
         this.my_LineRenderer.startWidth = this.handle_radius;
         this.my_LineRenderer.endWidth = this.handle_radius;
 
         this.my_LineRenderer.positionCount = this.my_ShapeCreator.shapes[0].points.Count;
         this.my_LineRenderer.SetPositions(this.my_ShapeCreator.shapes[0].points.ToArray());
+
 
     }
 
@@ -122,7 +148,7 @@ public partial class RiskySandBox_LevelEditor_TileCreation : MonoBehaviour
                 RiskySandBox_Tile _Tile = RiskySandBox_Tile.createTile(_creation_ID, new Vector3(0, 0, 0), Quaternion.identity, new Vector3(1, 1, 1), _Mesh.vertices.ToList(), _Mesh.triangles.ToList());
                 
                 _Tile.UI_scale_factor.value = this.tile_ui_scale_factor;
-                _Tile.UI_position = new Vector3(_Mesh.vertices.Sum(v => v.x) / _Mesh.vertices.Count(), 0, _Mesh.vertices.Sum(v => v.z) / _Mesh.vertices.Count());
+                _Tile.UI_position.value = new Vector3(_Mesh.vertices.Sum(v => v.x) / _Mesh.vertices.Count(), 0, _Mesh.vertices.Sum(v => v.z) / _Mesh.vertices.Count());
 
             }
 
@@ -149,7 +175,7 @@ public partial class RiskySandBox_LevelEditor_TileCreation : MonoBehaviour
         {
             if (this.debugging)
                 GlobalFunctions.print("'f' key pressed - placing the ui onto the tile with id" + _current_Tile.ID.value,this);
-            _current_Tile.UI_position = RiskySandBox_CameraControls.current_hit_point;//place the ui for the tile at the hit point
+            _current_Tile.UI_position.value = RiskySandBox_CameraControls.current_hit_point;//place the ui for the tile at the hit point
             _current_Tile.UI_scale_factor.value = this.tile_ui_scale_factor;//update the scale factor for the ui...
 
         }

@@ -3,16 +3,21 @@ using UnityEngine;
 
 public partial class RiskySandBox_MainGame_AssassinMode : MonoBehaviour
 {
+    public static RiskySandBox_MainGame_AssassinMode instance;
     [SerializeField] bool debugging;
+
+
+    public static ObservableBool enable_assassin_mode { get { return instance.PRIVATE_assassin_mode; } }
+    [SerializeField] ObservableBool PRIVATE_assassin_mode;
 
 
     private void Awake()
     {
-
-        //ok so when a team kills another team...
+        instance = this;
 
         RiskySandBox_Team.OnVariableUpdate_killer_ID_STATIC += RiskySandBox_TeamOnVariableUpdate_killer_ID_STATIC;
         RiskySandBox_Team.OnVariableUpdate_assassin_target_ID_STATIC += EventReceiver_OnVariableUpdate_assassin_target_ID_STATIC;
+        RiskySandBox_MainGame.Onattack += EventReceiver_Onattack;
 
 
     }
@@ -20,8 +25,52 @@ public partial class RiskySandBox_MainGame_AssassinMode : MonoBehaviour
     private void OnDestroy()
     {
         RiskySandBox_Team.OnVariableUpdate_killer_ID_STATIC -= RiskySandBox_TeamOnVariableUpdate_killer_ID_STATIC;
+        RiskySandBox_MainGame.Onattack -= EventReceiver_Onattack;
     }
 
+    void EventReceiver_Onattack(RiskySandBox_MainGame.EventInfo_Onattack _EventInfo)
+    {
+        if (PrototypingAssets.run_server_code.value == false)
+        {
+            if (this.debugging)
+                GlobalFunctions.print("run_server_code.value == false... returning",this);
+            return;
+        }
+
+        if (RiskySandBox_MainGame_AssassinMode.enable_assassin_mode == false)
+        {
+            if (this.debugging)
+                GlobalFunctions.print("assassin mode is not enabled... returning", this);
+            return;
+        }
+        if (_EventInfo.capture_flag == false)
+        {
+            if (this.debugging)
+                GlobalFunctions.print("wasnt a capture event... returning", this);
+            return;
+        }
+            
+
+
+        RiskySandBox_Team _attacked_Team = _EventInfo.defending_Team;
+
+        List<RiskySandBox_Tile> _attacked_Teams_Tiles = RiskySandBox_Tile.all_instances.Where(t => t.my_Team_ID.value == _attacked_Team.ID.value).ToList();
+        int _killer_ID = _EventInfo.start_Tile.my_Team.ID;
+
+        if (_attacked_Teams_Tiles.Count > 0)
+
+        {
+            if (this.debugging)
+                GlobalFunctions.print(_attacked_Team.ID.value + " still has tiles (so hasnt been killed...) returning", this);
+            return;
+        }
+
+
+
+        if (this.debugging)
+            GlobalFunctions.print("setting the team with id = " + _attacked_Team.ID + " killer_ID.value to " + _killer_ID,this);
+        _attacked_Team.killer_ID.value = _killer_ID;
+    }
 
     void EventReceiver_OnVariableUpdate_assassin_target_ID_STATIC(RiskySandBox_Team _Team)
     {
@@ -50,7 +99,7 @@ public partial class RiskySandBox_MainGame_AssassinMode : MonoBehaviour
 
     void RiskySandBox_TeamOnVariableUpdate_killer_ID_STATIC(RiskySandBox_Team _Team)
     {
-        if (RiskySandBox_MainGame.instance.assassin_mode.value == false)
+        if (RiskySandBox_MainGame_AssassinMode.enable_assassin_mode.value == false)
             return;
 
         RiskySandBox_Team _killer = RiskySandBox_Team.GET_RiskySandBox_Team(_Team.killer_ID.value);

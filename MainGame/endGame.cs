@@ -26,7 +26,7 @@ public partial class RiskySandBox_MainGame
 
 
         this.game_setup_UI.SetActive(false);
-        RiskySandBox_Tile.destroyAllTiles();
+        this.clearMap();
 
         OnendGame_Inspector.Invoke();
         OnendGame?.Invoke();

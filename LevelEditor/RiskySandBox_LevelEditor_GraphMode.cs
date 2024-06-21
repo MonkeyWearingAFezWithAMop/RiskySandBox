@@ -21,17 +21,21 @@ public partial class RiskySandBox_LevelEditor_GraphMode : MonoBehaviour
 
     private void Awake()
     {
-        this.enable_behaviour.OnUpdate += EventReceiver_OnVariableUpdate_enable_behaviour;
-    }
-
-
-    void EventReceiver_OnVariableUpdate_enable_behaviour(ObservableBool _enable_behaviour)
-    {
-        if(_enable_behaviour == false)
+        this.enable_behaviour.OnUpdate += delegate
         {
-            this.selected_Tile = null;
-        }
+            if (this.enable_behaviour == false)
+                this.selected_Tile = null;
+        };
+
+        RiskySandBox_LevelEditor.Ondisable += RiskySandBox_LevelEditorEventReceiver_Ondisable;
     }
+
+    void RiskySandBox_LevelEditorEventReceiver_Ondisable()
+    {
+        this.enable_behaviour.value = false;
+    }
+
+
 
     private void Update()
     {
@@ -51,10 +55,10 @@ public partial class RiskySandBox_LevelEditor_GraphMode : MonoBehaviour
                 if(_current_Tile != null && _current_Tile != this.selected_Tile)
                 {
                     //toggle the connection state!
-                    if (this.selected_Tile.graph_connections.Contains(_current_Tile.ID))
-                        this.selected_Tile.graph_connections.Remove(_current_Tile.ID);
+                    if (this.selected_Tile.graph_connections_IDs.Contains(_current_Tile.ID))
+                        this.selected_Tile.graph_connections_IDs.Remove(_current_Tile.ID);
                     else
-                        this.selected_Tile.graph_connections.Add(_current_Tile.ID);
+                        this.selected_Tile.graph_connections_IDs.Add(_current_Tile.ID);
 
                     updateTileMaterials();
 
@@ -88,7 +92,7 @@ public partial class RiskySandBox_LevelEditor_GraphMode : MonoBehaviour
             return;
 
         this.selected_Tile.GetComponent<MeshRenderer>().material = PrototypingAssets_Materials.blue;
-        foreach(int _connection in this.selected_Tile.graph_connections)
+        foreach(int _connection in this.selected_Tile.graph_connections_IDs)
         {
             RiskySandBox_Tile _connection_Tile = RiskySandBox_Tile.GET_RiskySandBox_Tile(_connection);
             if(_connection_Tile != null)

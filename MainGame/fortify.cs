@@ -32,111 +32,79 @@ public partial class RiskySandBox_MainGame
 
     }
 
-    //risksandbox_data/streamingassets/maps
 
-
-    public static List<int> CalculateRoute(int start, int end,RiskySandBox_Team _Team)
+    public bool canFortify(RiskySandBox_Tile _from,RiskySandBox_Tile _to,int _n_troops)
     {
-        
-        return CalculateRoute(start, end, new HashSet<int>(), new List<int>(),_Team);
-    }
-
-    private static List<int> CalculateRoute(int current, int end, HashSet<int> visited, List<int> path,RiskySandBox_Team _Team)
-    {
-        visited.Add(current);
-        path.Add(current);
-
-        if (current == end)
+        if (_from == null || _to == null)
         {
-            return new List<int>(path); // Return a copy of the path
+            if (this.debugging)
+                GlobalFunctions.print("_from or _to was null _from = " + _from + " _to = " + _to, this);
+            return false;
         }
 
-        foreach (int neighbor in RiskySandBox_Tile.GET_RiskySandBox_Tile(current).graph_connections)
-        {
-            if (visited.Contains(neighbor))
-                continue;
+        RiskySandBox_Team _Team = _from.my_Team;
 
-            RiskySandBox_Tile neighbor_Tile = RiskySandBox_Tile.GET_RiskySandBox_Tile(neighbor);
-
-            //TODO - if this neighbour is null? - there is a problem with the graph... we should correct this?
-            //TODO - what happens if the tile is "blocked" or inactive in some way... maybe someone has temporarly stopped the connection?
-
-            if (neighbor_Tile.my_Team != _Team)
-            {
-                if (RiskySandBox_MainGame.instance.enable_alliances == false)
-                    continue;
-                //check if the neighbour is an ally of _Team
-
-                bool _is_ally = _Team.ally_ids.Contains(neighbor_Tile.my_Team_ID);
-                if (_is_ally == false || RiskySandBox_MainGame.instance.allow_fortify_through_ally_Tiles.value == false)
-                    continue;
-                
-            }
-                
-
-            List<int> newPath = CalculateRoute(neighbor, end, visited, path,_Team);
-            if (newPath != null)
-            {
-                return newPath;
-            }
-            
-        }
-
-        path.RemoveAt(path.Count - 1); // Backtrack
-        return null;
-    }
-
-
-    public virtual bool fortify(RiskySandBox_Team _Team, RiskySandBox_Tile _from, RiskySandBox_Tile _to, int _n_troops)
-    {
         if (_Team.current_turn_state != RiskySandBox_Team.turn_state_fortify)
         {
             if (debugging)
                 GlobalFunctions.print("not in the fortify state...", this);
             return false;
         }
-        //make sure there are enough troops on _from and that _from and _to both belong to the same team...
-        if (_from.my_Team != _Team)
-        {
-            if (debugging)
-                GlobalFunctions.print("unable to fortify as _from doesnt belong to this Team...", this);
-            return false;
-        }
+
+       
         if (_to.my_Team != _Team)
         {
-            if (debugging)
-                GlobalFunctions.print("unable to fortify as _to doesnt belong to this Team...", this);
-            return false;
+            if (RiskySandBox_AllianceSettings.allow_fortify_to_ally_Tiles.value == false)
+            {
+                if (debugging)
+                    GlobalFunctions.print("unable to fortify as _to doesnt belong to this Team and allow_fortify_to_ally_Tiles.value == false returning...", this);
+                return false;
+
+            }
+
+            bool _is_ally = _from.my_Team.ally_ids.Contains(_to.my_Team_ID);
+            if (_is_ally == false)
+            {
+                if (debugging)
+                    GlobalFunctions.print("unable to fortify as _to doesnt belong to this Team and it's not an ally returning...", this);
+                return false;
+            }
         }
 
-        if(_from.num_troops <= _n_troops)//TODO - need to also think about RiskySandBox_Tile.min_troops_per_tile...
+        if (_from.num_troops <= _n_troops)//TODO - need to also think about RiskySandBox_Tile.min_troops_per_tile...
         {
             if (debugging)
-                GlobalFunctions.print("unable to fortify as _from.num_troops <= _n_troops",this);
+                GlobalFunctions.print("unable to fortify as _from.num_troops <= _n_troops", this);
             return false;
         }
 
+        List<RiskySandBox_Tile> _path = RiskySandBox_MainGame.findPath(_from, _to);
 
-
-        List<int> _path = CalculateRoute(_from.ID, _to.ID,_Team);
-
-        if(_path == null)
+        if (_path == null || _path.Count == 0)
         {
             if (debugging)
-                GlobalFunctions.print("unable to find a route from " + _from + " _to " + _to+" returning",this);
+                GlobalFunctions.print("unable to find a route from " + _from + " _to " + _to + " returning", this);
             return false;
         }
 
+        return true;
+    }
 
-        print("path: " + string.Join(",", _path));
 
+    public virtual bool fortify(RiskySandBox_Tile _from, RiskySandBox_Tile _to, int _n_troops)
+    {
+
+        bool _can_fortify = RiskySandBox_MainGame.instance.canFortify(_from, _to, _n_troops);
+
+        if (_can_fortify == false)
+            return false;
 
 
         RiskySandBox_MainGame.instance.SET_num_troops(_from.ID, _from.num_troops - _n_troops);//reduce troops from _from
         RiskySandBox_MainGame.instance.SET_num_troops(_to.ID, _to.num_troops + _n_troops);//give troops to _to
 
 
-        invokeEvent_Onfortify(_Team, _from, _to, _n_troops, _alert_MultiplayerBridge: true);
+        invokeEvent_Onfortify(_from.my_Team, _from, _to, _n_troops, _alert_MultiplayerBridge: true);
 
         return true;
     }

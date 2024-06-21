@@ -12,6 +12,10 @@ public partial class RiskySandBox_AudioClipPlayer : MonoBehaviour
 
     [SerializeField] AudioSource my_AudioSource { get { return GetComponent<AudioSource>(); } }
 
+    [SerializeField] float latest_AudioClip_length;
+
+
+    float next_deploy_timestamp;
 
 
     private void Awake()
@@ -33,7 +37,10 @@ public partial class RiskySandBox_AudioClipPlayer : MonoBehaviour
                 GlobalFunctions.print("PrototypingAssets.run_client_code.value == false... returning",this);
             return;
         }
-            
+
+        //we do not want to "spam" the deploy sound effect if lots of deploys happen at the "same" time (probs because its an ai making all its deploys in one go...
+        if (Time.time < next_deploy_timestamp)
+            return;
 
         //TODO - select a audio clip from the map folder?
 
@@ -65,6 +72,7 @@ public partial class RiskySandBox_AudioClipPlayer : MonoBehaviour
 
         StartCoroutine(LoadAndPlayAudioClip_wav(_full_wav_path, _volume));
 
+        next_deploy_timestamp = Time.time + latest_AudioClip_length;
 
 
 
@@ -94,8 +102,10 @@ public partial class RiskySandBox_AudioClipPlayer : MonoBehaviour
                 if (this.debugging)
                     GlobalFunctions.print("playing audio clip! " + file_path,this);
                 AudioClip _AudioClip = UnityEngine.Networking.DownloadHandlerAudioClip.GetContent(www);
+                latest_AudioClip_length = _AudioClip.length;
 
                 AudioSource.PlayClipAtPoint(_AudioClip, RiskySandBox_CameraControls.instance.GET_cameraPosition(), _volume);
+
                 
             }
         }

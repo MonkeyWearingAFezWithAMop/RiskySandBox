@@ -20,23 +20,29 @@ public partial class RiskySandBox_LevelEditor_Bonuses : MonoBehaviour
     {
         this.PRIVATE_current_bonus_index.min_value = 0;
         this.PRIVATE_current_bonus_index.max_value = Math.Max(0, RiskySandBox_Bonus.all_instances.Count - 1);
+
         updateLevelEditorUIs();
-        this.enable_behaviour.OnUpdate += OnVariableUpdate_enable_behaviour;
-        this.PRIVATE_current_bonus_index.OnUpdate += OnVariableUpdate_current_bonus_index;
+
+        this.enable_behaviour.OnUpdate += delegate { updateLevelEditorUIs(); }; 
+        this.PRIVATE_current_bonus_index.OnUpdate += delegate { updateLevelEditorUIs(); };
+
         RiskySandBox_Bonus.all_instances.OnUpdate += EventReceiver_OnBonusListUpdate;
+        RiskySandBox_LevelEditor.Ondisable += RiskySandBox_LevelEditorEventReceiver_Ondisable;
 
     }
+
+    void RiskySandBox_LevelEditorEventReceiver_Ondisable()
+    {
+        this.enable_behaviour.value = false;
+    }
+
+
 
     // Update is called once per frame
     void Update()
     {
         if (this.enable_behaviour == false)
             return;
-
-
-
-
-
     }
 
     public void createNewBonus()
@@ -45,9 +51,6 @@ public partial class RiskySandBox_LevelEditor_Bonuses : MonoBehaviour
         this.PRIVATE_current_bonus_index.max_value += 1;
         this.PRIVATE_current_bonus_index.value = RiskySandBox_Bonus.all_instances.Count;
     }
-
-
-   
 
     public void updateLevelEditorUIs()
     {
@@ -72,16 +75,6 @@ public partial class RiskySandBox_LevelEditor_Bonuses : MonoBehaviour
     void EventReceiver_OnBonusListUpdate()
     {
         this.PRIVATE_current_bonus_index.max_value = RiskySandBox_Bonus.all_instances.Count - 1;
-        updateLevelEditorUIs();
-    }
-
-    void OnVariableUpdate_enable_behaviour(ObservableBool _enable_behaviour)
-    {
-        updateLevelEditorUIs();
-    }
-
-    void OnVariableUpdate_current_bonus_index(ObservableInt _current_bonus_index)
-    {
         updateLevelEditorUIs();
     }
 

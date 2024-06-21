@@ -42,7 +42,7 @@ public partial class RiskySandBox_MainGame
 
         
 
-        int _new_num_troops = _Tile.num_troops.value + RiskySandBox_MainGame.instance.capital_troop_generation;
+        int _new_num_troops = _Tile.num_troops.value + RiskySandBox_MainGame_CapitalsMode.capital_troop_generation.value;
 
         RiskySandBox_MainGame.instance.SET_num_troops(_Tile.ID, _new_num_troops);
 

@@ -32,48 +32,64 @@ public partial class RiskySandBox_MainGame
     }
 
 
-
-
-    public virtual void deploy(RiskySandBox_Team _Team, RiskySandBox_Tile _Tile, int _n_troops)
+    public bool canDeploy(RiskySandBox_Team _Team,RiskySandBox_Tile _Tile,int _n_troops)
     {
-        string _current_turn_state = _Team.current_turn_state;
-        int _deployable_troops = _Team.deployable_troops;
+        if (_Team == null || _Tile == null)
+        {
+            if (this.debugging)
+                GlobalFunctions.print("_Team was null or _Tile was null... returning false _Team = "+_Team+" _Tile = "+_Tile, this);
+            return false;
+        }
+            
 
-        if (_current_turn_state != RiskySandBox_Team.turn_state_deploy)//if the Team is not in the deploy state...
+        if (_Team.current_turn_state != RiskySandBox_Team.turn_state_deploy)//if the Team is not in the deploy state...
         {
             if (debugging)
                 GlobalFunctions.print("not in the deploy state...", this);
-            return;
+            return false;
         }
 
-        if (_deployable_troops < _n_troops)//if the Team doesnt have enough troops...
+        if (_Team.deployable_troops < _n_troops)//if the Team doesnt have enough troops...
         {
             if (debugging)
                 GlobalFunctions.print("can't deploy troops as we don't have enough troops... returning - _n_troops = " + _n_troops, this);
-            return;
+            return false;
         }
 
-        if (_Tile.my_Team != _Team)//if the Tile doesn't belong to the Team...
+        if (_Tile.my_Team == _Team)//TODO - what if we made it so there is a setting that means you cant deploy to your own tiles??? maybe in a team game you can only deploy to your teams tiles?
+            //this is probs a bad idea however so maybe lets not care for now...
+            return true;
+
+        
+        if (RiskySandBox_AllianceSettings.enable_alliances == true)
         {
-            if(RiskySandBox_MainGame.instance.enable_alliances)
-            {
-                
-                bool _is_ally = _Team.ally_ids.Contains(_Tile.my_Team.ID);
+            bool _is_ally = _Team.ally_ids.Contains(_Tile.my_Team.ID);
 
-                if (_is_ally == false || RiskySandBox_MainGame.instance.allow_deploy_to_ally_Tiles == false)//if it isnt an ally OR we are not allowed to deploy to ally Tiles
-                    return;//dont allow this...
-            }
-
-            else
-            {
-                if (debugging)
-                    GlobalFunctions.print("can't deploy troops to this Tile as the Tile does not belong to this Team... returning", this);
-                return;
-            }
-
-
-
+            if (_is_ally == false || RiskySandBox_AllianceSettings.allow_deploy_to_ally_Tiles == false)//if it ISNT an ally OR we are not allowed to deploy to ally Tiles
+                return false ;//dont allow this...
         }
+
+        else
+        {
+            if (debugging)
+                GlobalFunctions.print("can't deploy troops to this Tile as the Tile does not belong to this Team... returning", this);
+            return false;
+        }
+
+        
+
+        return true;
+    }
+
+
+    public virtual bool deploy(RiskySandBox_Team _Team, RiskySandBox_Tile _Tile, int _n_troops)
+    {
+
+        bool _can_deploy = RiskySandBox_MainGame.instance.canDeploy(_Team, _Tile, _n_troops);
+
+        if (_can_deploy == false)
+            return false;
+
 
         RiskySandBox_MainGame.instance.SET_num_troops(_Tile.ID, _Tile.num_troops + _n_troops);
         _Team.deployable_troops.value -= _n_troops;
@@ -85,6 +101,8 @@ public partial class RiskySandBox_MainGame
         {
             _Team.current_turn_state.value = RiskySandBox_Team.turn_state_attack;
         }
+
+        return true;
 
     }
 }

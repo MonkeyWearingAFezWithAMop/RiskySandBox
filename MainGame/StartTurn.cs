@@ -26,6 +26,8 @@ public partial class RiskySandBox_MainGame : MonoBehaviour
 
         else if(_Team.num_cards >= this.max_num_cards)
         {
+            if (this.debugging)
+                GlobalFunctions.print("putting _Team into the force trade in state... because the have too many cards...", _Team);
             _Team.current_turn_state.value = RiskySandBox_Team.turn_state_force_trade_in;
         }
 
@@ -33,6 +35,9 @@ public partial class RiskySandBox_MainGame : MonoBehaviour
         {
             _Team.current_turn_state.value = RiskySandBox_Team.turn_state_deploy;
         }
+
+
+
 
     }
 }

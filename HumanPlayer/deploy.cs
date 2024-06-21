@@ -6,50 +6,23 @@ public partial class RiskySandBox_HumanPlayer
 {
 
 
-    /// <summary>
-    /// code that runs when player left clicks in the "deploy" state...
-    /// </summary>
-    void handleLeftClick_deploy()
+
+
+
+    public void TRY_deploy(RiskySandBox_Tile _Tile, int _n_troops)
     {
-        RiskySandBox_Tile _current_Tile = RiskySandBox_CameraControls.current_hovering_Tile;
-
-        if (_current_Tile == null)
+        //TODO - add if(debugging) statemenets...
+        if (_Tile == null)
             return;
 
-        if (this.selected_Tile != null)
+        if (this.my_Team.current_turn_state != RiskySandBox_Team.turn_state_deploy)
             return;
 
-
-        if(_current_Tile.my_Team == this.my_Team)
-        {
-            this.selected_Tile = _current_Tile;
-            return;
-        }
-
-        if (RiskySandBox_MainGame.instance.enable_alliances == false)
-            return;
-
-        bool _is_ally = this.my_Team.ally_ids.Contains(_current_Tile.my_Team_ID);
-
-        if (_is_ally == false || RiskySandBox_MainGame.instance.allow_deploy_to_ally_Tiles.value == false)
-            return;
-
-        this.selected_Tile = _current_Tile;
-        
-    }
-
-
-    public void TRY_deploy()
-    {
-        int _n_Troops = this.slider_value.value;
-        RiskySandBox_Tile _Tile = this.selected_Tile;
 
         if (this.debugging)
-            GlobalFunctions.print("asking server to deploy to " + _n_Troops + " to the Tile with ID = " + _Tile.ID, this);
+            GlobalFunctions.print("asking server to deploy to " + _n_troops + " to the Tile with ID = " + _Tile.ID, this);
 
-
-        my_PhotonView.RPC("ClientInvokedRPC_deploy", RpcTarget.MasterClient, (int)_Tile.ID, (int)_n_Troops);//ask server to deploy...
-
+        my_PhotonView.RPC("ClientInvokedRPC_deploy", RpcTarget.MasterClient, (int)_Tile.ID, (int)_n_troops);//ask server to deploy...
     }
 
 

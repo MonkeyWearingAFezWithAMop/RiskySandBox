@@ -19,6 +19,9 @@ public partial class RiskySandBox_Team : MonoBehaviour
     [SerializeField] private ObservableBool PRIVATE_show_assassin_target_indicator;
 
 
+    [SerializeField] private ObservableBool PRIVATE_has_captured_Tile;
+
+
     [SerializeField] ObservableFloat PRIVATE_end_turn_time_stamp;
     [SerializeField] ObservableBool PRIVATE_is_my_turn;
     [SerializeField] GameObject PRIVATE_my_UI;

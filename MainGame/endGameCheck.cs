@@ -44,7 +44,7 @@ public partial class RiskySandBox_MainGame
                 if (_n_capitals_total > 0)
                 {
                     float _capitals_percentage = _n_capitals_Team / _n_capitals_total;
-                    if (_capitals_percentage >= this.PRIVATE_capital_conquest_percentage)//if they have captured enough capitals in order to win...
+                    if (_capitals_percentage >= RiskySandBox_MainGame_CapitalsMode.capital_conquest_percentage.value)//if they have captured enough capitals in order to win...
                     {
                         _winners.Add(_Team);//add them to the winners 
                     }
@@ -59,7 +59,7 @@ public partial class RiskySandBox_MainGame
         if (_winners.Count > 0)
         {
             //end the game...
-            endGame();//pass in (or "save") the winners so that the "endgame scene" can show everyone who won!
+            endGame();//TODO - pass in (or "save") the winners so that the "endgame scene" can show everyone who won!
         }
 
 

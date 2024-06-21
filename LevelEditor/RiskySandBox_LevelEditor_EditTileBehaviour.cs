@@ -38,6 +38,15 @@ public partial class RiskySandBox_LevelEditor_EditTileBehaviour : MonoBehaviour
     private void Awake()
     {
         this.enable_behaviour.OnUpdate += EventReceiver_OnVariableUpdate_enable_behaviour;
+
+        RiskySandBox_LevelEditor.Ondisable += RiskySandBox_LevelEditorEventReceiver_Ondisable;
+    }
+
+    void RiskySandBox_LevelEditorEventReceiver_Ondisable()
+    {
+        this.enable_behaviour.value = false;
+        if (this.selected_Tile != null)
+            this.selected_Tile = null;
     }
 
 

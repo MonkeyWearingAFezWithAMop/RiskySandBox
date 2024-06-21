@@ -31,6 +31,7 @@ public partial class RiskySandBox_Tile
         MeshCollider _Collider = _GameObject.GetComponent<MeshCollider>();
         _Collider.sharedMesh = _new_Mesh;
 
+        _new_Tile_script.mesh_points_2D = _mesh_verts.ToList();
 
         _GameObject.transform.position = _centre;
         _GameObject.transform.rotation = _rotation;

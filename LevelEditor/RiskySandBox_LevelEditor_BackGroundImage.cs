@@ -75,6 +75,24 @@ public partial class RiskySandBox_LevelEditor_BackGroundImage : MonoBehaviour
 
             // Assign the texture to the RawImage component
             background_Image.texture = texture;
+
+
+            float _target_width = texture.width;
+            float _target_height = texture.height;
+
+            while(_target_width > 1 || _target_height > 1)
+            {
+                _target_width = _target_width / 10f;
+                _target_height = _target_height / 10f;
+            }
+
+            PRIVATE_background_image_x_scale.value = _target_width;
+            PRIVATE_background_image_y_scale.value = _target_height;
+
+
+
+
+
         }
     }
 

@@ -9,19 +9,16 @@ public partial class RiskySandBox_AttackSimulations
 
     
 
+    
 
-
-    public static void doBattle(int _n_attackers,int _n_defenders,string _simulation_mode, out int _remaining_attackers,out int _remaining_defenders)
+    public static void doBattle(int _n_attackers,int _n_defenders,string _simulation_mode, out int _attacker_deaths,out int _defender_deaths)
     {
-        _remaining_attackers = _n_attackers;
-        _remaining_defenders = _n_defenders;
+        int _remaining_attackers = _n_attackers;
+        int _remaining_defenders = _n_defenders;
 
 
-        if (_simulation_mode == capitals_mode_string)
-        {
-            //basically the exact same thing but importantly if _remaining_defenders > 2 they get a bonus dice???? - is this a "free" dice roll
+        bool _capital_mode = _simulation_mode == capitals_mode_string;
 
-        }
 
         while(_remaining_attackers > 0 && _remaining_defenders > 0)
         {
@@ -29,11 +26,13 @@ public partial class RiskySandBox_AttackSimulations
             int _n_attacker_rolls = Math.Min(_remaining_attackers, 3);
             int _n_defender_rolls = Math.Min(_remaining_defenders, 2);
 
+            if (_capital_mode == true)//the capital lets the defender roll 3 dice instead of just 2 (ASSUMING the capital tile has 3 or more troops on the tile...)
+                _n_defender_rolls = Math.Min(_remaining_defenders, 3);
+            
+
             List<int> _attacker_dice_rolls = GlobalFunctions.randomInts(_n_attacker_rolls, 1, 6).OrderByDescending(x => x).ToList();
             List<int> _defender_dice_rolls = GlobalFunctions.randomInts(_n_defender_rolls, 1, 6).OrderByDescending(x => x).ToList();
 
-
-            //ok great now its a sort of penalty shoot out..
 
             int _max_i = Math.Min(_n_attacker_rolls, _n_defender_rolls);
 
@@ -47,6 +46,9 @@ public partial class RiskySandBox_AttackSimulations
 
 
         }
+
+        _attacker_deaths = _n_attackers - _remaining_attackers;
+        _defender_deaths = _n_defenders - _remaining_defenders;
 
     }
 

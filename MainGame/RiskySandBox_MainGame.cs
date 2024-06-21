@@ -17,6 +17,11 @@ public partial class RiskySandBox_MainGame
     public static event Action<RiskySandBox_Tile> OnSET_num_troops;
     public static event Action<RiskySandBox_Tile> OnSET_my_Team;
 
+    /// <summary>
+    /// called whenever a Team "trades in" territory cards... (the team AND the number of troops they got
+    /// </summary>
+    public static event Action<RiskySandBox_Team,int> OnterritoryCardTrade;
+
     public ObservableList<RiskySandBox_Team> ai_Teams = new ObservableList<RiskySandBox_Team>();
 
 
@@ -29,21 +34,71 @@ public partial class RiskySandBox_MainGame
     public ObservableInt n_bots { get { return this.PRIVATE_n_bots; } }
     public GameObject game_setup_UI { get { return PRIVATE_game_setup_UI; } }
 
-    public ObservableInt num_capitals_startGame { get { return PRIVATE_num_capitals_startGame; } }
 
-    public ObservableBool assassin_mode { get { return this.PRIVATE_assassin_mode; } }
+
+    public ObservableInt progressive_trade_in_increment;
+
+    //to begin with you would do something like 4,6,8,10,12,15 (then we would have 15 + increment, 15 + 2* increment and so on...) 
+    public ObservableString progressive_trade_in_start_string;
+
+    public ObservableInt progressive_trade_in_count;//each time a progressive trade in happens... we increment this by 1...
+
+    public int calculateProgressiveTradeIn(int _n)
+    {
+
+        if(progressive_trade_in_start_string.value == "")
+        {
+            return progressive_trade_in_increment * (_n + 1);
+        }
+
+
+        //so first look at the string!
+        List<int> _start_values = progressive_trade_in_start_string.value.Split(',').Select(x => int.Parse(x)).ToList();
+
+        if(_start_values.Count == 0)
+        {
+            return progressive_trade_in_increment * (_n + 1);
+        }
+
+        if (_n >= _start_values.Count)
+        {
+            return _start_values[_start_values.Count - 1] + progressive_trade_in_increment * (_n - _start_values.Count());
+        }
+
+        return _start_values[_n];
+        
+
+
+
+    }
+
+
+
+    public ObservableInt num_wildcards { get { return this.PRIVATE_num_wildcards; } }
 
     public ObservableInt max_num_cards { get { return this.PRIVATE_max_num_cards; } }
 
-    public ObservableInt capital_troop_generation { get { return this.PRIVATE_capital_troop_generation; } }
+    
 
     public ObservableInt n_stable_portals { get { return this.PRIVATE_n_stable_portals;} }
     public ObservableInt n_unstable_portals { get { return this.PRIVATE_n_unstable_portals; } }
     public ObservableInt n_blizards { get { return this.PRIVATE_n_blizards; } }
 
+    public ObservableBool display_bonuses { get { return this.PRIVATE_display_bonuses; } }
 
 
+    public ObservableBool enable_territory_cards { get { return this.PRIVATE_enable_territory_cards; } }
+    public ObservableString territory_card_mode { get { return this.PRIVATE_territory_card_mode; } }
 
+    /// <summary>
+    /// how much time does the team "get back" after capturing...
+    /// </summary>
+    public ObservableFloat capture_increment { get { return this.PRIVATE_capture_increment; } }//TODO - rename this to capture_turn_timer_increment????
+
+    /// <summary>
+    /// how many troops does each team start the game with...
+    /// </summary>
+    public ObservableInt num_troops_startGame { get { return this.PRIVATE_n_troops_startGame; } }
 
 
 
@@ -55,7 +110,7 @@ public partial class RiskySandBox_MainGame
     public Transform tile_parent_Transform { get { return this.transform; } }
     public Transform bonus_parent_Transform { get { return this.transform; } }
     
-
+    public ObservableBool show_escape_menu { get { return this.PRIVATE_show_escape_menu; } }
 
     List<RiskySandBox_Team> turn_order { get { return RiskySandBox_Team.all_instances.Where(x => x != null && x.defeated.value == false).OrderByDescending(x => x.ID.value).Reverse().ToList(); } }
 
@@ -160,6 +215,49 @@ public partial class RiskySandBox_MainGame
     {
         if (this.debugging)
             GlobalFunctions.print("ending the teams turn..." + _debug_reason, _Team,_Team,_debug_reason);
+
+        
+
+        //if territory cards are enabled? AND the team has caputred a Tile...
+        if(RiskySandBox_MainGame.instance.enable_territory_cards.value == true && _Team.has_captured_Tile == true)
+        {
+            //give them a card! (if any)
+            List<int> _availible_cards = RiskySandBox_Tile.all_instances.Select(x => x.ID.value).ToList();
+
+
+            int _n_wilds = RiskySandBox_MainGame.instance.num_wildcards;
+
+            foreach(RiskySandBox_Team _Team1 in RiskySandBox_Team.all_instances)
+            {
+                if(_Team == null)
+                {
+                    //TODO - WTF?!?!?!? - really this isnt my problem so maybe lets just not worry?
+                    continue;
+                }
+
+                _n_wilds -= _Team1.territory_card_IDs.Where(x => x == RiskySandBox_TerritoryCard.wildcard_ID).Count();
+
+                foreach(int _ID in _Team1.territory_card_IDs)
+                {
+                    //remove from availbile cards
+                    if (_ID == RiskySandBox_TerritoryCard.wildcard_ID)
+                        continue;
+                    _availible_cards.Remove(_ID);
+                }
+            }
+
+
+            if (_n_wilds > 0 || _availible_cards.Count() > 0)
+            {
+                int _random_card = RiskySandBox_TerritoryCard.drawRandomCard(_availible_cards, _n_wilds);
+
+                _Team.addTerritoryCard(_random_card);
+            }
+
+        }
+
+
+        _Team.has_captured_Tile.value = false;
         _Team.current_turn_state.value = RiskySandBox_Team.turn_state_waiting;
         _Team.deployable_troops.value = 0;
         _Team.is_my_turn.value = false;
@@ -238,6 +336,156 @@ public partial class RiskySandBox_MainGame
 
             startTurn(_next_Team);
             
+        }
+
+    }
+
+
+    public bool isValidTrade(List<int> _card_IDs)
+    {
+        if (RiskySandBox_MainGame.instance.enable_territory_cards == false)
+            return false;
+
+        string _card_mode = RiskySandBox_MainGame.instance.territory_card_mode;
+        int _n_wilds = _card_IDs.Where(x => x == RiskySandBox_TerritoryCard.wildcard_ID).Count();
+
+        if (_card_mode == RiskySandBox_TerritoryCard.fixed_mode || _card_mode == RiskySandBox_TerritoryCard.progressive_mode)
+        {
+            //make sure there are 3 cards!
+            if (_card_IDs.Count != 3)
+                return false;
+
+            HashSet<int> _card_types = new HashSet<int>(_card_IDs.Where(x => x != RiskySandBox_TerritoryCard.wildcard_ID).Select(x => x % 3));
+
+            if(_n_wilds == 0)
+            {
+                if (this.debugging)
+                    GlobalFunctions.print("n wilds == 0 _card_tyoes.Count() == " + _card_types.Count(),this);
+                //all are the same type... or they are all different types...
+                return _card_types.Count() == 1 || _card_types.Count() == 3;
+            }
+            if(_n_wilds == 1)
+            {
+                if (this.debugging)
+                    GlobalFunctions.print("n wilds == 1 _card_tyoes.Count() == " + _card_types.Count(), this);
+                //if there is only 1 type? or there are 2 types?
+                return _card_types.Count() == 1 || _card_types.Count() == 2;
+            }
+            if(_n_wilds == 2)
+            {
+                if (this.debugging)
+                    GlobalFunctions.print("n wilds == 2 _card_tyoes.Count() == " + _card_types.Count(), this);
+                return _card_types.Count() == 1;
+            }
+
+            if(_n_wilds == 3)
+            {
+                if (this.debugging)
+                    GlobalFunctions.print("n wilds == 3", this);
+                return true;
+            }
+
+            GlobalFunctions.printError("WTF?!?!??!?!",this);
+            return false;
+
+
+
+
+
+        }
+        //presumably you (the person reading this) is trying to implement your own "territory card" algoriythm please read the below instructions...
+        //TODO - put in some detailed instructions here to help people do this...
+        //https://github.com/MonkeyWearingAFezWithAMop
+
+        GlobalFunctions.printError("UNIMPLEMENTED!!!!",this);
+        return false;
+    }
+
+    public void TRY_tradeInCards(RiskySandBox_Team _Team, IEnumerable<int> _card_IDs)
+    {
+        //make sure the team has cards with these ids...
+        if (RiskySandBox_MainGame.instance.enable_territory_cards == false)
+        {
+            if (this.debugging)
+                GlobalFunctions.print("RiskySandBox_MainGame.instance.enable_territory_cards == false",this);
+            return;
+        }
+
+        //TODO - does the team have to be in the "deploy" state? or the force trade in state?
+        //the other alternative is the deploy state || they have 5? cards...
+
+        
+
+
+        List<int> _card_IDs_List = new List<int>(_card_IDs);
+
+
+        if(_card_IDs_List.Count() <= 0)
+        {
+            //no...
+            if (this.debugging)
+                GlobalFunctions.print("_card_IDs.Count() <= 0?!?!?!",this);
+            return;
+        }
+
+
+        foreach(int _ID in _card_IDs_List)
+        {
+            //if the team doesnt have the required ids...
+            int _count = _card_IDs_List.Where(x => x == _ID).ToList().Count();
+
+            int _Team_Count = _Team.territory_card_IDs.Where(x => x == _ID).ToList().Count();
+
+            if (_count > _Team_Count)
+            {
+                if(debugging)
+                    GlobalFunctions.print("the team doesnt have enough of the cards with the id = " + _ID, this);
+                return;
+            }
+
+        }
+
+        int _bonus_troops = 0;
+
+        if(RiskySandBox_MainGame.instance.territory_card_mode == RiskySandBox_TerritoryCard.progressive_mode)
+        {
+            _bonus_troops = RiskySandBox_MainGame.instance.calculateProgressiveTradeIn(RiskySandBox_MainGame.instance.progressive_trade_in_count);
+
+            
+
+            RiskySandBox_MainGame.instance.progressive_trade_in_count.value += 1;
+
+        }
+
+        if(RiskySandBox_MainGame.instance.territory_card_mode == RiskySandBox_TerritoryCard.fixed_mode)
+        {
+            int _troops = 0;
+
+            _Team.deployable_troops.value += _troops;
+        }
+
+        foreach(int _card_id in _card_IDs_List)
+        {
+            //remove this card from the team...
+            _Team.removeTerritoryCard(_card_id);
+        }
+
+        //give the team the deployable troops!
+        _Team.deployable_troops.value += _bonus_troops;
+
+        RiskySandBox_MainGame.OnterritoryCardTrade?.Invoke(_Team, _bonus_troops);//tell everyone a trade in just happened...
+
+
+        //if they are in the force trade in state????
+        if (_Team.current_turn_state == RiskySandBox_Team.turn_state_force_trade_in)
+        {
+            if(_Team.num_cards < RiskySandBox_MainGame.instance.max_num_cards)
+            {
+                //TODO - nope! - we want to instead say something like _Team.TRY_enterDeployState() - this is because of capitals (or other turn states) may need to be dealt with before entering the deploy state...
+                //say for example a player started the game with 5 cards and needed to place a capital! - they would first need to place the capital... play the 5 cards then go into deploy state!
+                //obviously this isnt how the standard rules work... but this game is a sandbox mode where many unusual things can happen!
+                _Team.current_turn_state.value = RiskySandBox_Team.turn_state_deploy;
+            }
         }
 
     }

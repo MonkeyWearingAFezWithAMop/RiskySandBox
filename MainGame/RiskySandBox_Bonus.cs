@@ -31,14 +31,41 @@ public partial class RiskySandBox_Bonus : MonoBehaviour
     new public ObservableString name { get { return PRIVATE_name; } }
 
 
+    public Color my_Color { get { return new Color(my_Color_r / 255f, my_Color_g / 255f, my_Color_b / 255f); } }
+    [SerializeField] ObservableInt my_Color_r;
+    [SerializeField] ObservableInt my_Color_g;
+    [SerializeField] ObservableInt my_Color_b;
+
+
+
+    [SerializeField] ObservableVector3 ui_scale;
+    [SerializeField] ObservableVector3 ui_position;
+
+    
+
 
 
     private void Awake()
     {
 
+      
+
         RiskySandBox_LevelEditorHandle.all_instances.OnUpdate += LevelEditorHandleEventReceiver_OnListUpdate_all_instances;
 
-        this.PRIVATE_border_width.OnUpdate += EventReceiver_OnVariableUpdate_border_width;
+        this.PRIVATE_border_width.OnUpdate += delegate
+        {
+            float _value = PRIVATE_border_width;
+            foreach (LineRenderer _LineRenderer in this.border_LineRenderers)
+            {
+                _LineRenderer.startWidth = _value;
+                _LineRenderer.endWidth = _value;
+            }
+            foreach (RiskySandBox_LevelEditorHandle _handle in RiskySandBox_LevelEditorHandle.all_instances)
+            {
+                _handle.transform.localScale = new Vector3(_value, _value, _value);
+            }
+        };
+
 
         this.tile_IDs.OnUpdate += updateVisuals;
 
@@ -64,24 +91,13 @@ public partial class RiskySandBox_Bonus : MonoBehaviour
     }
 
 
+
+
     void EventReceiver_OnSET_my_Team(RiskySandBox_Tile _Tile)
     {
         updateVisuals();
     }
 
-    void EventReceiver_OnVariableUpdate_border_width(ObservableFloat _border_width)
-    {
-        foreach(LineRenderer _LineRenderer in this.border_LineRenderers)
-        {
-            _LineRenderer.startWidth = _border_width;
-            _LineRenderer.endWidth = _border_width;
-            
-            foreach(RiskySandBox_LevelEditorHandle _handle in RiskySandBox_LevelEditorHandle.all_instances)
-            {
-                _handle.transform.localScale = new Vector3(_border_width, _border_width, _border_width);
-            }
-        }
-    }
 
 
     private void Update()
@@ -93,7 +109,7 @@ public partial class RiskySandBox_Bonus : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.Space))
         {
             RiskySandBox_Tile _Tile = RiskySandBox_CameraControls.current_hovering_Tile;
-
+            
             if(_Tile != null)
             {
                 //toggle...
@@ -210,20 +226,36 @@ public partial class RiskySandBox_Bonus : MonoBehaviour
     }
 
 
+    public static RiskySandBox_Bonus GET_RiskySandBox_Bonus(RiskySandBox_Tile _Tile)
+    {
+        if(_Tile == null)
+        {
+            //TODO - debug wtf?!?!?!?
+            return null;
+        }
+        //TODO - what happens if multiple bonuses can have the samme tile????
+        foreach(RiskySandBox_Bonus _Bonus in RiskySandBox_Bonus.all_instances)
+        {
+            if (_Bonus.tile_IDs.Contains(_Tile.ID) == true)
+                return _Bonus;
+        }
+        return null;
+    }
+
     public void updateVisuals()
     {
         if(RiskySandBox_LevelEditor.is_enabled == false)
         {
-            //great! - we are not in the level editor so there isnt really much to think about...
 
             //a list of all the "Teams" that control tiles within this bonus...
             List<RiskySandBox_Team> _Teams = new HashSet<RiskySandBox_Team>(this.tile_IDs.Select(x => RiskySandBox_Tile.GET_RiskySandBox_Tile(x)).Where(x => x != null).Select(x => x.my_Team)).ToList();
 
+
+
+
             ///TODO - what happens if a team doesnt have to control ALL tiles in order to get the bonus...
             //this is unlikely to be a feature but could be interesting???  
-
-
-            if(_Teams.Count == 1 && _Teams[0] != null)
+            if (_Teams.Count == 1 && _Teams[0] != null)
             {
                 //update my borders to match....
                 foreach(LineRenderer _LineRenderer in this.border_LineRenderers)
@@ -231,31 +263,8 @@ public partial class RiskySandBox_Bonus : MonoBehaviour
                     _LineRenderer.material = _Teams[0].my_Material;
                 }
 
-
-                foreach (int _id in this.tile_IDs)
-                {
-                    RiskySandBox_Tile _Tile = RiskySandBox_Tile.GET_RiskySandBox_Tile(_id);
-                    if (_Tile == null)
-                        continue;
-
-                    _Tile.my_Bonus_Material = _Teams[0].my_Bonus_Material;
-                }
-
             }
-            else
-            {
-                foreach(int _id in this.tile_IDs)
-                {
-                    RiskySandBox_Tile _Tile = RiskySandBox_Tile.GET_RiskySandBox_Tile(_id);
-                    if (_Tile == null)
-                        continue;
-
-                    _Tile.my_Bonus_Material = null;
-                }
-            }
-
-
-
+            
 
             return;
         }
@@ -275,7 +284,7 @@ public partial class RiskySandBox_Bonus : MonoBehaviour
             _Tile.my_LevelEditor_Material = null;
         }
 
-        foreach(int _id in this.tile_IDs)
+        foreach(int _id in this.tile_IDs) 
         {
             RiskySandBox_Tile _Tile = RiskySandBox_Tile.GET_RiskySandBox_Tile(_id);
             if (_Tile == null)
@@ -312,6 +321,9 @@ public partial class RiskySandBox_Bonus : MonoBehaviour
         _Writer.WriteLine("generation:" + _Bonus.generation.ToString());//save "generation"
         _Writer.WriteLine("name:" + _Bonus.name);//save the name
         _Writer.WriteLine("tiles:" + string.Join(",", _Bonus.tile_IDs));//save the list of tile ids...
+        _Writer.WriteLine( string.Format("my_Color:{0},{1},{2}", _Bonus.my_Color_r, _Bonus.my_Color_g, _Bonus.my_Color_b));//save the material for the bonus
+        _Writer.WriteLine( string.Format("ui_scale:{0},{1},{2}", _Bonus.ui_scale.x, _Bonus.ui_scale.y, _Bonus.ui_scale.z));
+        _Writer.WriteLine(string.Format("ui_position:{0},{1},{2}", _Bonus.ui_position.x, _Bonus.ui_position.y, _Bonus.ui_position.z));
 
         _Writer.Close();//save...
 
@@ -379,9 +391,31 @@ public partial class RiskySandBox_Bonus : MonoBehaviour
         }
 
 
-        _new_Bonus.name.value = _data["name"];
-        _new_Bonus.generation.value = int.Parse(_data["generation"]);
-        _new_Bonus.tile_IDs.AddRange(_data["tiles"].Split(",").Select(x => int.Parse(x)).ToList());
+        //TODO - else print WTF?!?!?!?!
+        if(_data.ContainsKey("name") == true)
+            _new_Bonus.name.value = _data["name"];
+
+        if(_data.ContainsKey("generation") == true)
+            _new_Bonus.generation.value = int.Parse(_data["generation"]);
+
+        if(_data.ContainsKey("tiles") == true)
+            _new_Bonus.tile_IDs.AddRange(_data["tiles"].Split(",").Select(x => int.Parse(x)).ToList());
+
+        if(_data.ContainsKey("my_Color") == true)
+        {
+            _new_Bonus.my_Color_r.value = int.Parse(_data["my_Color"].Split(",")[0]);
+            _new_Bonus.my_Color_g.value = int.Parse(_data["my_Color"].Split(",")[1]);
+            _new_Bonus.my_Color_b.value = int.Parse(_data["my_Color"].Split(",")[2]);
+        }
+
+        if(_data.ContainsKey("ui_scale") == true)
+            _new_Bonus.ui_scale.value = new Vector3(float.Parse(_data["ui_scale"].Split(",")[0]), float.Parse(_data["ui_scale"].Split(",")[1]), float.Parse(_data["ui_scale"].Split(",")[2]));
+
+        if (_data.ContainsKey("ui_position") == true)
+            _new_Bonus.ui_scale.value = new Vector3(float.Parse(_data["ui_position"].Split(",")[0]), float.Parse(_data["ui_position"].Split(",")[1]), float.Parse(_data["ui_position"].Split(",")[2]));
+
+
+
 
 
         if (System.IO.Directory.Exists(System.IO.Path.Combine( _directory + "/Borders") ) == true)
