@@ -41,14 +41,15 @@ public partial class RiskySandBox_Bonus : MonoBehaviour
     [SerializeField] ObservableVector3 ui_scale;
     [SerializeField] ObservableVector3 ui_position;
 
+
+
     
 
 
 
     private void Awake()
     {
-
-      
+        all_instances.Add(this);
 
         RiskySandBox_LevelEditorHandle.all_instances.OnUpdate += LevelEditorHandleEventReceiver_OnListUpdate_all_instances;
 
@@ -66,21 +67,20 @@ public partial class RiskySandBox_Bonus : MonoBehaviour
             }
         };
 
+        this.name.OnUpdate += delegate { this.gameObject.name = "RiskySandBox_Bonus: '" + this.name.value+"'"; };
+
 
         this.tile_IDs.OnUpdate += updateVisuals;
 
         this.show_level_editor_ui.OnUpdate += delegate { updateVisuals(); };
 
         RiskySandBox_MainGame.OnSET_my_Team += EventReceiver_OnSET_my_Team;
+        RiskySandBox_MainGame.OnsaveMap += EventReceiver_OnsaveMap;
 
 
 
     }
 
-    private void Start()
-    {
-        all_instances.Add(this);
-    }
 
     private void OnDestroy()
     {
@@ -88,7 +88,10 @@ public partial class RiskySandBox_Bonus : MonoBehaviour
         all_instances.Remove(this);
 
         RiskySandBox_MainGame.OnSET_my_Team -= EventReceiver_OnSET_my_Team;
+        RiskySandBox_MainGame.OnsaveMap -= EventReceiver_OnsaveMap;
     }
+
+
 
 
 
@@ -122,25 +125,15 @@ public partial class RiskySandBox_Bonus : MonoBehaviour
 
         }
 
-        if (Input.GetKey(KeyCode.LeftShift))
+        
+        if (Input.GetKeyDown(KeyCode.V))
         {
-            if (Input.GetKeyDown(KeyCode.V))
-            {
-                current_LineRenderer = null;
+            //add a point to the current border...
+            if(current_LineRenderer == null)
                 createNewBorder();
-                RiskySandBox_LevelEditorHandle.createHandle(RiskySandBox_CameraControls.mouse_position,this.PRIVATE_border_width);
-            }
-        }
-        else
-        {
-            if (Input.GetKeyDown(KeyCode.V))
-            {
-                //add a point to the current border...
-                if(current_LineRenderer == null)
-                    createNewBorder();
-                RiskySandBox_LevelEditorHandle.createHandle(RiskySandBox_CameraControls.mouse_position,this.PRIVATE_border_width);
-            } 
-        }
+            RiskySandBox_LevelEditorHandle.createHandle(RiskySandBox_CameraControls.mouse_position,this.PRIVATE_border_width);
+        } 
+        
 
         if(Input.GetKeyDown(KeyCode.C))
         {
@@ -177,9 +170,12 @@ public partial class RiskySandBox_Bonus : MonoBehaviour
         _new_LineRenderer.transform.parent = this.transform;
         border_LineRenderers.Add(_new_LineRenderer);
         current_LineRenderer = _new_LineRenderer;
+        current_LineRenderer.startWidth = this.PRIVATE_border_width;
+        current_LineRenderer.endWidth = this.PRIVATE_border_width;
         RiskySandBox_LevelEditorHandle.destroyAllHandles();
         
     }
+
 
 
     public void createNewBorder(IEnumerable<Vector3> _points)
@@ -197,6 +193,9 @@ public partial class RiskySandBox_Bonus : MonoBehaviour
         {
             _new_LineRenderer.SetPosition(i, _points_list[i]);
         }
+
+        _new_LineRenderer.startWidth = this.PRIVATE_border_width;
+        _new_LineRenderer.endWidth = this.PRIVATE_border_width;
     }
 
 
@@ -218,7 +217,15 @@ public partial class RiskySandBox_Bonus : MonoBehaviour
 
     public static RiskySandBox_Bonus createNewBonus()
     {
-        GameObject _new_GameObject = UnityEngine.Object.Instantiate(RiskySandBox_Resources.Bonus_prefab,RiskySandBox_MainGame.instance.bonus_parent_Transform);
+        if(PrototypingAssets.run_server_code.value == false)
+        {
+            GlobalFunctions.printError("only the server can create a bonus! (for now)",null);
+            return null;
+        }    
+
+        GameObject _new_GameObject = Photon.Pun.PhotonNetwork.InstantiateRoomObject(RiskySandBox_Resources.Bonus_prefab.name, new Vector3(0, 0, 0), Quaternion.identity);
+
+        //GameObject _new_GameObject = UnityEngine.Object.Instantiate(RiskySandBox_Resources.Bonus_prefab,RiskySandBox_MainGame.instance.bonus_parent_Transform);
 
         return _new_GameObject.GetComponent<RiskySandBox_Bonus>();
 
@@ -305,78 +312,49 @@ public partial class RiskySandBox_Bonus : MonoBehaviour
 
 
 
-
-    public static void saveBonus(RiskySandBox_Bonus _Bonus,string _directory)
+    void EventReceiver_OnsaveMap(string _directory)
     {
-        //ok we need to save the name, generation,material,id and all other data...
+        //save myself into the directory!
+        int _bonus_id = RiskySandBox_Bonus.all_instances.IndexOf(this);
+
+        string _file = System.IO.Path.Combine(_directory, string.Format("Bonus_{0}.txt", _bonus_id));
+
+        System.IO.StreamWriter _writer = new System.IO.StreamWriter(_file);
 
 
-        if(System.IO.Directory.Exists(_directory) == false)
+        _writer.WriteLine("generation:" + this.generation.ToString());//save "generation"
+        _writer.WriteLine("name:" + this.name);//save the name
+        _writer.WriteLine("tiles:" + string.Join(",", this.tile_IDs));//save the list of tile ids...
+        _writer.WriteLine(string.Format("my_Color:{0},{1},{2}", this.my_Color_r, this.my_Color_g, this.my_Color_b));//save the material for the bonus
+        _writer.WriteLine(string.Format("ui_scale:{0},{1},{2}", this.ui_scale.x, this.ui_scale.y, this.ui_scale.z));
+        _writer.WriteLine(string.Format("ui_position:{0},{1},{2}", this.ui_position.x, this.ui_position.y, this.ui_position.z));
+        _writer.WriteLine("border_width:" + this.PRIVATE_border_width.value);
+
+        string _borders_string = "";
+        foreach (LineRenderer _LineRenderer in this.border_LineRenderers)
         {
-            System.IO.Directory.CreateDirectory(_directory);
+            for (int p = 0; p < _LineRenderer.positionCount; p += 1)
+            {
+                Vector3 _v3 = _LineRenderer.GetPosition(p);
+                _borders_string = _borders_string + string.Format("{0},{1},{2},", _v3.x, _v3.y, _v3.z);
+            }
+            _borders_string = _borders_string.TrimEnd(',');
+            _borders_string = _borders_string + "|";
         }
 
-        System.IO.StreamWriter _Writer = new System.IO.StreamWriter(_directory + "/data.txt");
-
-        _Writer.WriteLine("generation:" + _Bonus.generation.ToString());//save "generation"
-        _Writer.WriteLine("name:" + _Bonus.name);//save the name
-        _Writer.WriteLine("tiles:" + string.Join(",", _Bonus.tile_IDs));//save the list of tile ids...
-        _Writer.WriteLine( string.Format("my_Color:{0},{1},{2}", _Bonus.my_Color_r, _Bonus.my_Color_g, _Bonus.my_Color_b));//save the material for the bonus
-        _Writer.WriteLine( string.Format("ui_scale:{0},{1},{2}", _Bonus.ui_scale.x, _Bonus.ui_scale.y, _Bonus.ui_scale.z));
-        _Writer.WriteLine(string.Format("ui_position:{0},{1},{2}", _Bonus.ui_position.x, _Bonus.ui_position.y, _Bonus.ui_position.z));
-
-        _Writer.Close();//save...
-
-
-
-        //now we also need to save the bonus border(s)
-        for (int i = 0; i < _Bonus.border_LineRenderers.Count; i += 1)
+        if (_borders_string.Count() > 0)
         {
-            if (System.IO.Directory.Exists(_directory + "/Borders") == false)
-                System.IO.Directory.CreateDirectory(_directory + "/Borders");
-            else
-            {
-                string[] files = System.IO.Directory.GetFiles(_directory + "/Borders");
-
-                // Loop through all files and delete them
-                foreach (string file in files)
-                {
-                    System.IO.File.Delete(file);
-                }
-            }
-
-            if (System.IO.Directory.Exists(_directory + "/Borders/" + i.ToString()) == false)
-                System.IO.Directory.CreateDirectory(_directory + "/Borders/" + i.ToString());
-
-
-            
-            LineRenderer _LineRenderer = _Bonus.border_LineRenderers[i];
-
-            string _border_file_path = System.IO.Path.Combine(_directory, "Borders/" + i.ToString(), "verts.txt");
-            GlobalFunctions.print(_border_file_path, null);
-            _Writer = new System.IO.StreamWriter(_border_file_path);
-
-            for (int _p = 0; _p < _LineRenderer.positionCount; _p += 1)
-            {
-                //save the point!
-                Vector3 _point = _LineRenderer.GetPosition(_p);
-                string _line = string.Format("{0},0.001,{1}",_point.x,_point.z);
-                _Writer.WriteLine(_line);
-            }
-            _Writer.Close();
-
-            //we also want to write in the border width....
-            _Writer = new System.IO.StreamWriter(System.IO.Path.Combine(_directory, "Borders", i.ToString(), "data.txt"));
-
-            _Writer.WriteLine("border_width:" + _Bonus.PRIVATE_border_width.value);
-            _Writer.Close();
-
-
+            //remove the last '|'
+            _borders_string = _borders_string.TrimEnd('|');
         }
+
+        _writer.WriteLine("borders:" + _borders_string);
+
+        _writer.Close();//save...
     }
 
 
-    public static RiskySandBox_Bonus loadBonus(string _directory)
+    public static RiskySandBox_Bonus loadBonus(string[] _lines)
     {
         //open up the data file....
 
@@ -384,14 +362,12 @@ public partial class RiskySandBox_Bonus : MonoBehaviour
 
         Dictionary<string, string> _data = new Dictionary<string, string>();
 
-        string _data_path = System.IO.Path.Join(_directory, "/data.txt");
-        foreach (string _line in System.IO.File.ReadAllLines(_data_path))
+        foreach (string _line in _lines)
         {
             _data.Add(_line.Split(":")[0],_line.Split(":")[1]);
         }
 
 
-        //TODO - else print WTF?!?!?!?!
         if(_data.ContainsKey("name") == true)
             _new_Bonus.name.value = _data["name"];
 
@@ -415,61 +391,31 @@ public partial class RiskySandBox_Bonus : MonoBehaviour
             _new_Bonus.ui_scale.value = new Vector3(float.Parse(_data["ui_position"].Split(",")[0]), float.Parse(_data["ui_position"].Split(",")[1]), float.Parse(_data["ui_position"].Split(",")[2]));
 
 
-
-
-
-        if (System.IO.Directory.Exists(System.IO.Path.Combine( _directory + "/Borders") ) == true)
+        if(_data.ContainsKey("borders") == true)
         {
-
-            foreach (string _border_folder in System.IO.Directory.GetDirectories(System.IO.Path.Combine(_directory + "/Borders")))
+            if (_data["borders"].Length > 0)
             {
-                //there should* be a verts.txt
-                //there should be a data.txt (border width...)
-
-                string _verts_file = System.IO.Path.Combine(_border_folder, "verts.txt");
-                if (System.IO.File.Exists(_verts_file) == true)
+                foreach (string _line in _data["borders"].Split("|"))
                 {
-                    List<Vector3> _points = new List<Vector3>();
-                    foreach (string _line in System.IO.File.ReadAllLines(_verts_file))
-                    {
-                        List<float> _float_values = _line.Split(",").Select(x => float.Parse(x)).ToList();
-                        _points.Add(new Vector3(_float_values[0], _float_values[1], _float_values[2]));
-                    }
-
-                    _new_Bonus.createNewBorder(_points);
-
-                    string _data_file = System.IO.Path.Combine(_border_folder, "data.txt");
-
                     
-                    if (System.IO.File.Exists(_data_file) == true)
+                    float[] _float_values = _line.Split(",").Select(x => float.Parse(x)).ToArray();
+                    List<Vector3> _points = new List<Vector3>();
+
+                    for (int i = 0; i < _float_values.Count() / 3; i += 1)
                     {
-                        Dictionary<string, string> _border_data = new Dictionary<string, string>();
-
-                        foreach(string _line in System.IO.File.ReadAllLines(_data_file))
-                        {
-                            print(_line);
-                            _border_data.Add(_line.Split(":")[0], _line.Split(":")[1]);
-
-                        }
-                        _new_Bonus.PRIVATE_border_width.value = float.Parse(_border_data["border_width"]);
+                        _points.Add(new Vector3(_float_values[i * 3], _float_values[i * 3 + 1], _float_values[i * 3 + 2]));
                     }
-
+                    _new_Bonus.createNewBorder(_points);
                 }
-
-                
             }
-
         }
 
+        if(_data.ContainsKey("border_width"))
+            _new_Bonus.PRIVATE_border_width.value = float.Parse(_data["border_width"]);
+        
 
         return _new_Bonus;
-
-
-
-
     }
-
-
 
 
 }

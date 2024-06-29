@@ -73,7 +73,8 @@ public partial class RiskySandBox_GameLobby : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom()
     {
         base.OnJoinedRoom();
-        createMyHumanPlayer();
+        if(RiskySandBox_LevelEditor.is_enabled == false)
+            createMyHumanPlayer();
         ui_root_Transform.gameObject.SetActive(!RiskySandBox_MainGame.instance.game_started);
     }
 

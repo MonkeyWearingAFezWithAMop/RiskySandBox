@@ -26,8 +26,10 @@ public partial class RiskySandBox_LevelEditor_TileCreation : MonoBehaviour
     public ObservableFloat tile_ui_scale_factor;
 
 
+    bool just_enabled_behaviour;
 
-    
+
+
 
 
 
@@ -49,6 +51,7 @@ public partial class RiskySandBox_LevelEditor_TileCreation : MonoBehaviour
         RiskySandBox_LevelEditorHandle.OnUpdate_position_STATIC += delegate { fullUpdate(); };
 
         RiskySandBox_LevelEditor.Ondisable += RiskySandBox_LevelEditorEventReceiver_Ondisable;
+        RiskySandBox_LevelEditor.OnrequestCloseOtherBehaviours += EventReceiver_OnrequestCloseOtherBehaviours;
 
 
         this.enable_behaviour.OnUpdate += delegate
@@ -60,6 +63,12 @@ public partial class RiskySandBox_LevelEditor_TileCreation : MonoBehaviour
             this.fullUpdate();
         };
 
+        this.enable_behaviour.OnUpdate_true += delegate
+        {
+            this.just_enabled_behaviour = true;
+            RiskySandBox_LevelEditor.instance.requestCloseOtherBehaviours();
+        };
+
 
     }
 
@@ -67,6 +76,20 @@ public partial class RiskySandBox_LevelEditor_TileCreation : MonoBehaviour
     void RiskySandBox_LevelEditorEventReceiver_Ondisable()
     {
         this.enable_behaviour.value = false;
+    }
+
+
+    void EventReceiver_OnrequestCloseOtherBehaviours()
+    {
+        if(this.just_enabled_behaviour)
+        {
+            this.just_enabled_behaviour = false;
+            return;
+        }
+
+        this.enable_behaviour.value = false;
+
+
     }
 
 
@@ -145,7 +168,7 @@ public partial class RiskySandBox_LevelEditor_TileCreation : MonoBehaviour
                     _creation_ID = RiskySandBox_Tile.all_instances.Max(x => x.ID.value) + 1;//give a unique id to the tile...
                 
 
-                RiskySandBox_Tile _Tile = RiskySandBox_Tile.createTile(_creation_ID, new Vector3(0, 0, 0), Quaternion.identity, new Vector3(1, 1, 1), _Mesh.vertices.ToList(), _Mesh.triangles.ToList());
+                RiskySandBox_Tile _Tile = RiskySandBox_Tile.createTile(_creation_ID, _Mesh.vertices.ToList());
                 
                 _Tile.UI_scale_factor.value = this.tile_ui_scale_factor;
                 _Tile.UI_position.value = new Vector3(_Mesh.vertices.Sum(v => v.x) / _Mesh.vertices.Count(), 0, _Mesh.vertices.Sum(v => v.z) / _Mesh.vertices.Count());

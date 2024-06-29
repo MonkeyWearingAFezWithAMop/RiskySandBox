@@ -17,6 +17,8 @@ public partial class RiskySandBox_MainGame
     public static event Action<RiskySandBox_Tile> OnSET_num_troops;
     public static event Action<RiskySandBox_Tile> OnSET_my_Team;
 
+    public static event Action OnclearMap;
+
     /// <summary>
     /// called whenever a Team "trades in" territory cards... (the team AND the number of troops they got
     /// </summary>
@@ -118,6 +120,7 @@ public partial class RiskySandBox_MainGame
 
     public void clearMap()
     {
+        OnclearMap?.Invoke();
         RiskySandBox_Tile.destroyAllTiles();
         RiskySandBox_Bonus.destroyAllBonuses();
     }

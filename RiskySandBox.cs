@@ -4,7 +4,14 @@ using UnityEngine;
 public partial class RiskySandBox : MonoBehaviour
 {
 
-    public static string maps_folder_path { get { return Application.streamingAssetsPath + "/RiskySandBox/Maps"; } }
+    public static string maps_folder_path
+    {
+        get
+        {
+            string _value = System.IO.Path.Combine(Application.streamingAssetsPath + "/RiskySandBox/Maps");
+            return _value;
+        }
+    }
 
 
     public static RiskySandBox instance { get; private set; }
@@ -26,7 +33,6 @@ public partial class RiskySandBox : MonoBehaviour
     void Awake()
     {
         instance = this;
-        //Debug.LogError("hello pun console");
     }
 
 
@@ -68,7 +74,7 @@ public partial class RiskySandBox : MonoBehaviour
 
     private void Start()
     {
-        connectToPhoton();
+        InvokeRepeating("connectToPhoton",0f, 2f);//make sure to always try and connect... this is useful if for some reason connection to photon drops for some reason...
     }
 
 
@@ -84,10 +90,17 @@ public partial class RiskySandBox : MonoBehaviour
         if (this.enable_multiplayer.value == false)
             return;
 
+        if (RiskySandBox_LevelEditor.is_enabled == true)
+            return;
+
+        if (RiskySandBox_MainMenu.is_enabled == true)
+            return;
+
+
         if (Photon.Pun.PhotonNetwork.IsConnected == false)
             Photon.Pun.PhotonNetwork.ConnectUsingSettings();
         
-        Invoke("connectToPhoton", 2f);//make sure to always try and connect... this is useful if for some reason connection to photon drops for some reason...
+        
     }
 
 }

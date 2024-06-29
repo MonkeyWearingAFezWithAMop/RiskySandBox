@@ -19,6 +19,9 @@ public partial class RiskySandBox_LevelEditor_GraphMode : MonoBehaviour
     [SerializeField] private RiskySandBox_Tile PRIVATE_selected_Tile;
 
 
+    bool just_enabled_behaviour;
+
+
     private void Awake()
     {
         this.enable_behaviour.OnUpdate += delegate
@@ -28,6 +31,13 @@ public partial class RiskySandBox_LevelEditor_GraphMode : MonoBehaviour
         };
 
         RiskySandBox_LevelEditor.Ondisable += RiskySandBox_LevelEditorEventReceiver_Ondisable;
+        RiskySandBox_LevelEditor.OnrequestCloseOtherBehaviours += EventReceiver_OnrequestCloseOtherBehaviours;
+
+        this.enable_behaviour.OnUpdate_true += delegate
+        {
+            this.just_enabled_behaviour = true;
+            RiskySandBox_LevelEditor.instance.requestCloseOtherBehaviours();
+        };
     }
 
     void RiskySandBox_LevelEditorEventReceiver_Ondisable()
@@ -35,6 +45,15 @@ public partial class RiskySandBox_LevelEditor_GraphMode : MonoBehaviour
         this.enable_behaviour.value = false;
     }
 
+    void EventReceiver_OnrequestCloseOtherBehaviours()
+    {
+        if(this.just_enabled_behaviour == true)
+        {
+            this.just_enabled_behaviour = false;
+            return;
+        }
+        this.enable_behaviour.value = false;
+    }
 
 
     private void Update()
@@ -91,7 +110,7 @@ public partial class RiskySandBox_LevelEditor_GraphMode : MonoBehaviour
         if (this.selected_Tile == null)
             return;
 
-        this.selected_Tile.GetComponent<MeshRenderer>().material = PrototypingAssets_Materials.blue;
+        this.selected_Tile.my_LevelEditor_Material = PrototypingAssets_Materials.blue;
         foreach(int _connection in this.selected_Tile.graph_connections_IDs)
         {
             RiskySandBox_Tile _connection_Tile = RiskySandBox_Tile.GET_RiskySandBox_Tile(_connection);

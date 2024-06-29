@@ -3,6 +3,9 @@ using UnityEngine;
 
 public partial class RiskySandBox_MainGame
 {
+    public static event Action<string> OnsaveMap;
+
+
     public void saveMap(string _map_ID)
     {
 
@@ -16,6 +19,10 @@ public partial class RiskySandBox_MainGame
         {
             Directory.CreateDirectory(_new_map_folder_dir);
         }
+
+        OnsaveMap?.Invoke(_new_map_folder_dir);
+
+
 
         StreamWriter writer = new StreamWriter(_new_map_folder_dir + "/MapInfo.txt");
         writer.WriteLine("ID:" + _map_ID);
@@ -39,26 +46,6 @@ public partial class RiskySandBox_MainGame
             Debug.LogError("An error occurred while trying to save the graph... " + ex.Message);
         }
 
-        try//we DO NOT WANT to fail saving the map just because the Bonus fails...
-        {
-
-
-            if (Directory.Exists(_new_map_folder_dir + "/" + "Bonuses") == false)
-            {
-                Directory.CreateDirectory(_new_map_folder_dir + "/Bonuses");
-            }
-
-            for (int i = 0; i < RiskySandBox_Bonus.all_instances.Count; i += 1)
-            {
-                RiskySandBox_Bonus _Bonus = RiskySandBox_Bonus.all_instances[i];
-                string _bonus_path = _new_map_folder_dir + "/Bonuses/" + i;
-                RiskySandBox_Bonus.saveBonus(_Bonus, _bonus_path);
-            }
-        }
-        catch(Exception ex)
-        {
-            Debug.LogError("An Error occured while trying to save the bonus..." + ex.Message);
-        }
 
         try
         {
@@ -70,31 +57,5 @@ public partial class RiskySandBox_MainGame
             Debug.LogError("An Error occured while trying to save the camera settings..." + ex.Message);
         }
 
-
-
-
-
-
-        string tiles_path = Path.Combine(_new_map_folder_dir, "Tiles");
-
-        if (!Directory.Exists(tiles_path))
-        {
-            Directory.CreateDirectory(tiles_path);
-        }
-
-
-        foreach (RiskySandBox_Tile _Tile in RiskySandBox_Tile.all_instances)
-        {
-            
-            string _tile_path = Path.Combine(tiles_path, _Tile.ID.ToString());
-
-            if (!Directory.Exists(_tile_path))
-            {
-                Directory.CreateDirectory(_tile_path);
-            }
-
-            RiskySandBox_Tile.saveTile(_Tile, _tile_path);
-            
-        }
     }
 }

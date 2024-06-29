@@ -95,6 +95,7 @@ public partial class RiskySandBox_LevelEditorHandle : MonoBehaviour
     public static void createHandle(Vector3 _point,float _radius)
     {
         GameObject _new = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        _new.name = "new LevelEditorHandle";
         _new.transform.position = _point;
         _new.transform.localScale = new Vector3(_radius, _radius, _radius);
         

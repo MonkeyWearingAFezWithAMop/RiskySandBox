@@ -5,7 +5,7 @@ using UnityEngine;
 public partial class RiskySandBox_Tile : MonoBehaviour
 {
 
-    static Dictionary<Collider, RiskySandBox_Tile> CACHE_GET_RiskySandBox_Tile_Colliders = new Dictionary<Collider, RiskySandBox_Tile>();
+    public static Dictionary<Collider, RiskySandBox_Tile> CACHE_GET_RiskySandBox_Tile_Colliders = new Dictionary<Collider, RiskySandBox_Tile>();
     public static RiskySandBox_Tile GET_RiskySandBox_Tile(Collider _Collider)
     {
         RiskySandBox_Tile _return_value = null;
@@ -27,7 +27,7 @@ public partial class RiskySandBox_Tile : MonoBehaviour
     [SerializeField] Material PRIVATE_my_LevelEditor_Material;
 
     //ok so this is needed for extruding the mesh 
-    public List<Vector3> mesh_points_2D = new List<Vector3>();
+    public ObservableList<Vector3> mesh_points_2D = new ObservableList<Vector3>();
 
 
 
@@ -52,7 +52,6 @@ public partial class RiskySandBox_Tile : MonoBehaviour
     [SerializeField] ObservableFloat PRIVATE_extrusion_height;
 
 
-    [SerializeField] bool is_extruding;
 
 
     [SerializeField] bool debugging;
@@ -85,8 +84,7 @@ public partial class RiskySandBox_Tile : MonoBehaviour
 
 
 
-    [SerializeField] MeshRenderer my_MeshRenderer { get { return GetComponent<MeshRenderer>(); } }
-    [SerializeField] MeshFilter my_MeshFilter { get { return GetComponent<MeshFilter>(); } }
+    [SerializeField] MeshRenderer my_MeshRenderer;
 
 
     [SerializeField] GameObject PRIVATE_has_capital_icon;
@@ -98,19 +96,17 @@ public partial class RiskySandBox_Tile : MonoBehaviour
     {
         my_Material = new Material(Shader.Find("Standard"));
 
-        Collider _my_Collider = GetComponent<MeshCollider>();
-        CACHE_GET_RiskySandBox_Tile_Colliders[_my_Collider] = this;
 
         this.my_Team_ID.OnUpdate += delegate { updateVisuals(); };
         this.PRIVATE_has_capital.OnUpdate += delegate { updateVisuals(); };
         this.PRIVATE_ID.OnUpdate += delegate { this.gameObject.name = "RiskySandBox_Tile ID = " + this.PRIVATE_ID.value; };
 
-        this.extrusion_height.OnUpdate += this.EventReceiver_OnVariableUpdate_extrusion_height;
         this.extrusion_height.OnUpdate += delegate { updateVisuals(); };
 
 
-        RiskySandBox_MainGame.instance.display_bonuses.OnUpdate += EventReceiver_OnVariableUpdate_display_bonuses;
 
+        RiskySandBox_MainGame.instance.display_bonuses.OnUpdate += EventReceiver_OnVariableUpdate_display_bonuses;
+        RiskySandBox_MainGame.OnsaveMap += EventReceiver_OnsaveMap;
        
         RiskySandBox_Tile.all_instances.Add(this);
 
@@ -133,7 +129,35 @@ public partial class RiskySandBox_Tile : MonoBehaviour
         }
 
         RiskySandBox_MainGame.instance.display_bonuses.OnUpdate -= EventReceiver_OnVariableUpdate_display_bonuses;
+        RiskySandBox_MainGame.OnsaveMap -= EventReceiver_OnsaveMap;
     }
+
+    void EventReceiver_OnsaveMap(string _directory)
+    {
+        string _file = System.IO.Path.Combine(_directory, string.Format("Tile_{0}.txt", this.ID.value));
+
+        System.IO.StreamWriter _writer = new System.IO.StreamWriter(_file);
+
+        //TODO - allow multiple meshes by adding in a '|' character???? s- might be nice for visual settings? for a tile e.g. its 2 small islands connected to each other  (japan has 2 islands and you may wish to represent as 2 seperate meshes)
+
+        _writer.WriteLine("verts:"+string.Join(",", this.mesh_points_2D.Select(v => string.Format("{0},{1},{2}",v.x,v.y,v.z))));
+
+        _writer.WriteLine("ID:" + this.ID);
+        _writer.WriteLine(save_load_key_num_troops + ":" + this.num_troops.value);
+        _writer.WriteLine("team:" + this.my_Team_ID.value);
+
+        _writer.WriteLine(string.Format("position:{0},{1},{2}", this.transform.position.x, this.transform.position.y, this.transform.position.z));//useful for "minor" adjustments to the tiles location...
+        _writer.WriteLine("UI_scale_factor:" + this.UI_scale_factor);
+        _writer.WriteLine("UI_position:" + this.UI_position.x + "," + this.UI_position.y + "," + this.UI_position.z);
+
+        _writer.WriteLine("capital_icon_local_position:" + this.capital_icon_local_position.x + "," + this.capital_icon_local_position.y + "," + this.capital_icon_local_position.z);
+        _writer.WriteLine("capital_icon_scale_factor:" + this.capital_icon_scale_factor.value);
+
+        _writer.Close();
+    }
+
+
+
 
 
     private void Start()
@@ -147,36 +171,7 @@ public partial class RiskySandBox_Tile : MonoBehaviour
         updateVisuals();
     }
 
-    void EventReceiver_OnVariableUpdate_extrusion_height(ObservableFloat _extrusion_height)
-    {
-        if (_extrusion_height.delta_value == 0)
-            return;
-        //if it is now 0?
-        //we must reset the
-        if (_extrusion_height == 0)
-        {
-            my_MeshFilter.mesh = ShapeCreator.createMesh(this.mesh_points_2D);
-            this.is_extruding = false;
 
-        }
-        else
-        {
-            if(this.is_extruding == false)
-                this.my_MeshFilter.mesh = ShapeCreator.createMesh(this.mesh_points_2D, true);
-            
-            List<Vector3> _new_verts = new List<Vector3>(this.mesh_points_2D);
-            _new_verts.AddRange(_new_verts);
-
-            for(int _i = 0; _i < _new_verts.Count() / 2; _i += 1)
-            {
-                _new_verts[_i] = new Vector3(_new_verts[_i].x, _extrusion_height, _new_verts[_i].z);
-            }
-            this.my_MeshFilter.mesh.vertices = _new_verts.ToArray();
-                
-            this.is_extruding = true;
-            
-        }
-    }
 
 
     public void updateVisuals()
@@ -218,26 +213,6 @@ public partial class RiskySandBox_Tile : MonoBehaviour
 
         }
 
-
-
-        //todo - we now want to extude the height of the tiles depending on the human player turn state and what tiles they have selected
-
-        //if in deploy state?
-        //    if we have a selected tile?
-        //        extude that tile....
-
-        //if in attack state
-        //    if we are selected?
-        //        extude self?
-
-        //    if we can attack this tile?
-        //        extude self
-
-        //if in forify state?
-        //    extude self if we can fortify to it or it is selecet
-
-
-        //we also want some kind of setting that the user can toggle e.g. enable_Tile_extruding...
 
             
 

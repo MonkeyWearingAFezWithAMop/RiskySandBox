@@ -55,9 +55,6 @@ public partial class RiskySandBox_MainGame
     public void startGame()
     {
 
-
-        this.loadMap(this.map_ID.value);//load the current map...
-
         if (PrototypingAssets.run_server_code.value == false)
         {
             if (this.debugging)
@@ -65,13 +62,25 @@ public partial class RiskySandBox_MainGame
             return;
         }
 
+        this.loadMap(this.map_ID.value);//load the current map...
+
+        
+
+
+//        RiskySandBox_ServerToClientMessages.instance.syncMap();
+
+
+
+    }
+
+
+    void EventReceiver_OnloadMapCompleted()
+    {
+        //so actually the level editor probably loaded a map... so the main game should NOT DO ANYTHING
+        if (RiskySandBox_LevelEditor.is_enabled == true)
+            return;
+
         OnstartGame_MultiplayerBridge?.Invoke();
-
-
-
-        //TODO -throw up a temp screen that says 10... 9.... 8.... 7... 6... 5... 4... 3... 2... 1... go!
-        //this also gives time for the map to get loaded/synced to clients?
-
 
         createTeams(RiskySandBox_Tile.all_instances.Count());
 
@@ -81,7 +90,7 @@ public partial class RiskySandBox_MainGame
         {
             //depending on the alliance settings...
             //lets create the initial alliances...
-            
+
             try
             {
                 if (RiskySandBox_AllianceSettings.alliance_string != "")
@@ -96,7 +105,7 @@ public partial class RiskySandBox_MainGame
                         //get the team...
                         //if the team isnt null...
                         //add all the other teams...
-                        foreach(int _ID in _ids)
+                        foreach (int _ID in _ids)
                         {
                             //get the team...
                             RiskySandBox_Team _Team = RiskySandBox_Team.GET_RiskySandBox_Team(_ID);
@@ -106,18 +115,18 @@ public partial class RiskySandBox_MainGame
                                 continue;
                             }
 
-                            foreach(int _other_ID in _ids.Where(x => x != _ID))
+                            foreach (int _other_ID in _ids.Where(x => x != _ID))
                             {
                                 //get the team!
                                 RiskySandBox_Team _other_Team = RiskySandBox_Team.GET_RiskySandBox_Team(_other_ID);
-                                if(_other_Team == null)
+                                if (_other_Team == null)
                                 {
                                     //TODO - decide if this is actually an error...
                                     continue;
                                 }
                                 _Team.createAlliance(_other_Team);
                             }
-                                
+
                         }
 
                     }
@@ -132,7 +141,7 @@ public partial class RiskySandBox_MainGame
                 //  quit/return to lobby?
                 //allow the host of the game to edit the alliances string
                 //then give all connected players a chance to "allow" this string to change?
-                GlobalFunctions.printError("unable to parse the alliance string... '" + RiskySandBox_AllianceSettings.alliance_string+"'", this);
+                GlobalFunctions.printError("unable to parse the alliance string... '" + RiskySandBox_AllianceSettings.alliance_string + "'", this);
 
             }
         }
@@ -161,7 +170,7 @@ public partial class RiskySandBox_MainGame
 
 
         //TODO - this.createInitialBlizards() or createBlizards(n)... so that way as time goes on we can "shrink" the map with more and more blizards to force the endgame...
-        for(int _b = 0; _b < PRIVATE_n_blizards; _b += 1)
+        for (int _b = 0; _b < PRIVATE_n_blizards; _b += 1)
         {
             List<RiskySandBox_Tile> _blizard_options = RiskySandBox_Tile.all_instances.Where(x => x != null && x.has_blizard.value == false).ToList();
 
@@ -184,7 +193,7 @@ public partial class RiskySandBox_MainGame
                 int _random_index = GlobalFunctions.randomInt(0, _portal_options.Count() - 1);
                 RiskySandBox_Tile _Tile = _portal_options[_random_index];
                 _Tile.has_stable_portal.value = true;
-                
+
             }
         }
 
@@ -200,7 +209,7 @@ public partial class RiskySandBox_MainGame
         this.game_started.value = true;
 
 
-        
+
         if (RiskySandBox_MainGame_CapitalsMode.enable_capitals.value == true)//if we are using capitals mode...
         {
             RiskySandBox_MainGame_CapitalsMode.instance.startGame();
@@ -213,7 +222,6 @@ public partial class RiskySandBox_MainGame
             RiskySandBox_Team _next_Team = GET_nextTeam(null);
             startTurn(_next_Team);
         }
-
     }
 
     public void EventReceiver_OncapitalsModeSetupComplete()

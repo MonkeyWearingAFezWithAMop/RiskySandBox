@@ -1,18 +1,20 @@
 using System.Collections;using System.Collections.Generic;using System.Linq;using System;
 using UnityEngine;
 using Photon.Pun;
-using System.ComponentModel;
 
 public partial class RiskySandBox_ServerToClientMessages : MonoBehaviour
 {
+    public static RiskySandBox_ServerToClientMessages instance;
+
     [SerializeField] bool debugging;
 
     PhotonView my_PhotonView;
 
-    include the debug statements this is very important
+    //TODO - include the debug statements this is very important server and client!
 
     void Awake()
     {
+        instance = this;
         my_PhotonView = GetComponent<PhotonView>();
 
         //Tile events... TODO - we need to move these events over to the RiskySandBox_Tile class???
@@ -62,12 +64,6 @@ public partial class RiskySandBox_ServerToClientMessages : MonoBehaviour
 
     void EventReceiver_OnstartGame_MultiplayerBridge()
     {
-
-        if (PrototypingAssets.run_server_code == false)//if we are not the server...
-            return;//DEBUG WTF?!?!??!!?
-
-        //tell the connected client(s) to load the map...
-        this.my_PhotonView.RPC("ServerInvokedRPC_loadMap", RpcTarget.Others, RiskySandBox_MainGame.instance.map_ID.value);
 
     }
 
@@ -195,15 +191,7 @@ public partial class RiskySandBox_ServerToClientMessages : MonoBehaviour
     }
 
 
-    [PunRPC]
-    void ServerInvokedRPC_loadMap(string _map_ID,PhotonMessageInfo _PhotonMessageInfo)
-    {
-        if (_PhotonMessageInfo.Sender.IsMasterClient == false)//only listen to the server!
-            return;
 
-        RiskySandBox_MainGame.instance.loadMap(_map_ID);
-
-    }
 
 
     //this is the actual rpc that get called on the clients...

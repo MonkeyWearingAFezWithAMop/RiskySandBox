@@ -14,6 +14,8 @@ public partial class RiskySandBox_LevelEditor_Bonuses : MonoBehaviour
 
     [SerializeField] ObservableBool PRIVATE_enable_create_bonus_button;
 
+    bool just_enabled_behaviour;
+
 
     // Start is called before the first frame update
     void Start()
@@ -28,6 +30,13 @@ public partial class RiskySandBox_LevelEditor_Bonuses : MonoBehaviour
 
         RiskySandBox_Bonus.all_instances.OnUpdate += EventReceiver_OnBonusListUpdate;
         RiskySandBox_LevelEditor.Ondisable += RiskySandBox_LevelEditorEventReceiver_Ondisable;
+        RiskySandBox_LevelEditor.OnrequestCloseOtherBehaviours += EventReceiver_OnrequestCloseOtherBehaviours;
+
+        this.enable_behaviour.OnUpdate_true += delegate
+        {
+            this.just_enabled_behaviour = true;
+            RiskySandBox_LevelEditor.instance.requestCloseOtherBehaviours();
+        };
 
     }
 
@@ -36,6 +45,15 @@ public partial class RiskySandBox_LevelEditor_Bonuses : MonoBehaviour
         this.enable_behaviour.value = false;
     }
 
+    void EventReceiver_OnrequestCloseOtherBehaviours()
+    {
+        if(this.just_enabled_behaviour)
+        {
+            this.just_enabled_behaviour = false;
+            return;
+        }
+        this.enable_behaviour.value = false;
+    }
 
 
     // Update is called once per frame

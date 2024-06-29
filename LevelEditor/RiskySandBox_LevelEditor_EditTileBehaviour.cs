@@ -27,6 +27,8 @@ public partial class RiskySandBox_LevelEditor_EditTileBehaviour : MonoBehaviour
 
     [SerializeField] RiskySandBox_Tile PRIVATE_selected_Tile;
 
+    bool just_enabled_behaviour;
+
     void EventReceiver_OnVariableUpdate_enable_behaviour(ObservableBool _enable_behaviour)
     {
         if (_enable_behaviour.value == false)
@@ -40,7 +42,25 @@ public partial class RiskySandBox_LevelEditor_EditTileBehaviour : MonoBehaviour
         this.enable_behaviour.OnUpdate += EventReceiver_OnVariableUpdate_enable_behaviour;
 
         RiskySandBox_LevelEditor.Ondisable += RiskySandBox_LevelEditorEventReceiver_Ondisable;
+        RiskySandBox_LevelEditor.OnrequestCloseOtherBehaviours += EventReceiver_OnrequestCloseOtherBehaviours;
+
+        this.enable_behaviour.OnUpdate_true += delegate
+        {
+            this.just_enabled_behaviour = true;
+            RiskySandBox_LevelEditor.instance.requestCloseOtherBehaviours();
+        };
     }
+
+    void EventReceiver_OnrequestCloseOtherBehaviours()
+    {
+        if(this.just_enabled_behaviour == true)
+        {
+            this.just_enabled_behaviour = false;
+            return;
+        }
+        this.enable_behaviour.value = false;
+    }
+
 
     void RiskySandBox_LevelEditorEventReceiver_Ondisable()
     {

@@ -30,6 +30,8 @@ public partial class RiskySandBox_LevelEditor : MonoBehaviour
 
     public static event Action Onenable;
     public static event Action Ondisable;
+    //e.g. when you go into "bonus mode" or "graph mode"
+    public static event Action OnrequestCloseOtherBehaviours;
 
 
     [SerializeField] ObservableBool show_escape_menu;
@@ -72,6 +74,11 @@ public partial class RiskySandBox_LevelEditor : MonoBehaviour
         disable();
     }
 
+
+    public void requestCloseOtherBehaviours()
+    {
+        OnrequestCloseOtherBehaviours?.Invoke();
+    }
     
 
 

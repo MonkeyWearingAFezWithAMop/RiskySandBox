@@ -7,6 +7,10 @@ public partial class RiskySandBox_MainMenu : MonoBehaviour
 
     [SerializeField] bool debugging;
 
+    public static ObservableBool is_enabled { get { return instance.PRIVATE_is_enabled; } }
+
+    [SerializeField] ObservableBool PRIVATE_is_enabled;
+
     [SerializeField] GameObject root_ui;
 
     [SerializeField] UnityEngine.UI.Button play_Button;

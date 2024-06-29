@@ -45,6 +45,8 @@ public partial class RiskySandBox_MainGame : MonoBehaviour
         RiskySandBox_Team.OnVariableUpdate_defeated_STATIC += delegate { endGameCheck(); };
         RiskySandBox_Team.OnturnTimerReachedZero += TeamEventReceiver_OnturnTimerReachedZero;
 
+        RiskySandBox_MainGame.OnloadMapCompleted += EventReceiver_OnloadMapCompleted;
+
 
     }
 

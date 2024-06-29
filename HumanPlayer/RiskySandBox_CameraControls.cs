@@ -51,7 +51,22 @@ public partial class RiskySandBox_CameraControls : MonoBehaviour
             Ray _Ray = instance.PRIVATE_my_Camera.ScreenPointToRay(Input.mousePosition);
 
             if (Physics.Raycast(_Ray, out RaycastHit _hit, Mathf.Infinity))
-                return _hit.collider.GetComponent<RiskySandBox_Tile>();
+            {
+
+                if (instance.debugging)
+                    GlobalFunctions.print("hit the collider: " + _hit.collider,_hit.collider);
+
+                return RiskySandBox_Tile.GET_RiskySandBox_Tile(_hit.collider);
+
+            }
+            else
+            {
+                if (instance.debugging)
+                    GlobalFunctions.print("hit nothing...",instance);
+
+            }
+            
+                
             return null;
         }
     }
@@ -93,6 +108,11 @@ public partial class RiskySandBox_CameraControls : MonoBehaviour
             PRIVATE_mouse_position.value = GlobalFunctions.snapToGrid(ray.GetPoint(_distance), instance.grid_size);
         }
 
+
+        if(Input.GetMouseButton(1))
+        {
+            adjustCameraHeight(RiskySandBox_Tile.all_instances.Select(x => x.gameObject).ToList());
+        }
 
 
         PRIVATE_my_Camera.fieldOfView = PRIVATE_camera_fov;
@@ -192,6 +212,58 @@ public partial class RiskySandBox_CameraControls : MonoBehaviour
         writer.WriteLine("camera_movement_speed_xz:" + PRIVATE_camera_movement_speed.value);
         writer.WriteLine("camera_movement_speed_y:" + PRIVATE_camera_zoom_speed.value);
         writer.Close();
+    }
+
+
+    public void adjustCameraHeight(List<GameObject> objectsToInclude)
+    {
+        if (objectsToInclude == null || objectsToInclude.Count == 0)
+        {
+            Debug.LogWarning("No objects to include in the camera view.");
+            return;
+        }
+
+        // Calculate the bounding box that includes all objects
+        Bounds bounds = new Bounds(Vector3.zero, Vector3.zero);
+        bool hasBounds = false;
+
+        foreach (GameObject obj in objectsToInclude)
+        {
+            Renderer renderer = obj.GetComponentInChildren<Renderer>();
+            if (renderer != null)
+            {
+                if (!hasBounds)
+                {
+                    bounds = new Bounds(renderer.bounds.center, renderer.bounds.size);
+                    hasBounds = true;
+                }
+                else
+                {
+                    bounds.Encapsulate(renderer.bounds);
+                }
+            }
+        }
+
+        if (!hasBounds)
+        {
+            Debug.LogWarning("None of the objects have a renderer component.");
+            return;
+        }
+
+        // Calculate the size needed for the camera to fit the bounding box
+        float boundsWidth = bounds.size.x;
+        float boundsDepth = bounds.size.z;
+        float maxDimension = Mathf.Max(boundsWidth, boundsDepth);
+
+        // Calculate the height required for the camera to fit the entire bounding box
+        float fov = this.my_Camera.fieldOfView;
+        float aspectRatio = this.my_Camera.aspect;
+        float cameraDistance = maxDimension / (2 * Mathf.Tan(Mathf.Deg2Rad * fov / 2));
+
+
+        // Adjust the camera's position
+        this.PRIVATE_camera_position.value = new Vector3(bounds.center.x, cameraDistance, bounds.center.z);
+        this.my_Camera.transform.LookAt(bounds.center);
     }
 
 }

@@ -33,6 +33,7 @@ public partial class RiskySandBox_TileColorPulse : MonoBehaviour
         RiskySandBox_HumanPlayer.OnVariableUpdate_attack_target_STATIC += EventReceiver_OnVariableUpdate_attack_target;
         RiskySandBox_HumanPlayer.OnVariableUpdate_fortify_start_STATIC += EventReceiver_OnVariableUpdate_fortify_start;
         RiskySandBox_HumanPlayer.OnVariableUpdate_fortify_target_STATIC += EventReceiver_OnVariableUpdate_fortify_target;
+        RiskySandBox_MainGame.instance.display_bonuses.OnUpdate += EventReceiver_OnVariableUpdate_display_bonuses;
 
 
     }
@@ -44,6 +45,7 @@ public partial class RiskySandBox_TileColorPulse : MonoBehaviour
         RiskySandBox_HumanPlayer.OnVariableUpdate_attack_target_STATIC -= EventReceiver_OnVariableUpdate_attack_target;
         RiskySandBox_HumanPlayer.OnVariableUpdate_fortify_start_STATIC -= EventReceiver_OnVariableUpdate_fortify_start;
         RiskySandBox_HumanPlayer.OnVariableUpdate_fortify_target_STATIC -= EventReceiver_OnVariableUpdate_fortify_target;
+        RiskySandBox_MainGame.instance.display_bonuses.OnUpdate -= EventReceiver_OnVariableUpdate_display_bonuses;
     }
 
     void EventReceiver_OnVariableUpdate_deploy_target(RiskySandBox_HumanPlayer _HumanPlayer) { recalculate(); }
@@ -51,6 +53,7 @@ public partial class RiskySandBox_TileColorPulse : MonoBehaviour
     void EventReceiver_OnVariableUpdate_attack_target(RiskySandBox_HumanPlayer _HumanPlayer) { recalculate(); }
     void EventReceiver_OnVariableUpdate_fortify_start(RiskySandBox_HumanPlayer _HumanPlayer) { recalculate(); }
     void EventReceiver_OnVariableUpdate_fortify_target(RiskySandBox_HumanPlayer _HumanPlayer) { recalculate(); }
+    void EventReceiver_OnVariableUpdate_display_bonuses(ObservableBool _display_bonuses) { recalculate(); }
 
 
     void recalculate()
@@ -73,12 +76,10 @@ public partial class RiskySandBox_TileColorPulse : MonoBehaviour
         }
 
         //if we can deploy to this tile???
-        _should_pulse = RiskySandBox_MainGame.instance.canDeploy(_LocalPlayer.my_Team, this.my_Tile, 1);
+        _should_pulse = RiskySandBox_MainGame.instance.canDeploy(_LocalPlayer.my_Team, this.my_Tile, 1);//TODO - magic number!
         _should_pulse |= RiskySandBox_MainGame.instance.canAttack(_LocalPlayer.attack_start, this.my_Tile);
-        
-
-
-
+        _should_pulse |= _LocalPlayer.fortify_target == null && RiskySandBox_MainGame.instance.canFortify(_LocalPlayer.fortify_start, this.my_Tile, 1);//TODO - magic number
+        _should_pulse &= !RiskySandBox_MainGame.instance.display_bonuses;
 
 
         this.enable_behaviour.value = _should_pulse;
